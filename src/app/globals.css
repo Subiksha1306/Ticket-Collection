@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --background: #F4F5F7;
+    --foreground: #111827;
+    
+    --sidebar-bg: #1A1D2D;
+    --sidebar-fg: #FFFFFF;
+    
+    --primary: #5A45FF;
+    --primary-hover: #4A35DF;
+    
+    --card-bg: #FFFFFF;
+    --border: #E5E7EB;
+    
+    --success: #10B981;
+    --success-bg: #D1FAE5;
+    
+    --warning: #F59E0B;
+    --warning-bg: #FEF3C7;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-geist-sans), sans-serif;
+  }
+}
+
+@layer components {
+  .primary-btn {
+    @apply bg-[var(--primary)] text-white px-4 py-2 rounded-md font-medium transition-colors hover:bg-[var(--primary-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2;
+  }
+  
+  .secondary-btn {
+    @apply bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-md font-medium transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6;
+  }
+  
+  .input-field {
+    @apply w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent transition-shadow;
+  }
+
+  .badge-active {
+    @apply bg-emerald-100 text-emerald-700 px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide uppercase;
+  }
+  
+  .badge-inactive {
+    @apply bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide uppercase;
+  }
+}
