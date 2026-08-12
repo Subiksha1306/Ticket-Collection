@@ -1,4 +1,4 @@
-import { getSession } from '@/lib/auth';
+import { getSession, isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { redirect } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
@@ -14,9 +14,11 @@ export default async function DashboardLayout({
     redirect('/login');
   }
 
+  const userIsAdmin = isAdmin(session.user?.email);
+
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--background)]">
-      <Sidebar userName={session.user?.name} />
+      <Sidebar userName={session.user?.name} isAdmin={userIsAdmin} />
       <div className="flex-1 flex flex-col h-full overflow-hidden">
         <Topbar />
         <main className="flex-1 overflow-y-auto p-6 md:p-8">

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { getSession } from '@/lib/auth'
+import { getSession, isAdmin } from '@/lib/auth'
 
 export async function GET(request: Request) {
   try {
@@ -9,7 +9,11 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const userIsAdmin = isAdmin(session.user.email);
+    const userId = (session.user as any).id;
+
     const submissions = await prisma.submission.findMany({
+      where: userIsAdmin ? undefined : { createdBy: userId },
       orderBy: { updatedAt: 'desc' },
       include: {
         versions: {

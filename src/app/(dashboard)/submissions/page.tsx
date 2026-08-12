@@ -1,4 +1,4 @@
-import { getSession } from '@/lib/auth';
+import { getSession, isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import Link from 'next/link';
 
@@ -6,7 +6,11 @@ export default async function MySubmissionsPage() {
   const session = await getSession();
   if (!session || !session.user) return null;
 
+  const userIsAdmin = isAdmin(session.user.email);
+  const userId = (session.user as any).id;
+
   const submissions = await prisma.submission.findMany({
+    where: userIsAdmin ? undefined : { createdBy: userId },
     orderBy: { updatedAt: 'desc' },
     include: {
       versions: {
@@ -21,7 +25,7 @@ export default async function MySubmissionsPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            All Submissions
+            {userIsAdmin ? 'All Submissions (Admin)' : 'My Submissions'}
           </h1>
           <p className="text-gray-500 mt-1">View and manage the records you've submitted.</p>
         </div>

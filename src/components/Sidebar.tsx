@@ -2,12 +2,12 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-export default function Sidebar({ userName }: { userName?: string | null }) {
+export default function Sidebar({ userName, isAdmin }: { userName?: string | null, isAdmin?: boolean }) {
   const pathname = usePathname();
 
   const navItems = [
     { name: 'Home', href: '/', icon: 'home' },
-    { name: 'My Submissions', href: '/submissions', icon: 'folder' },
+    { name: isAdmin ? 'All Submissions' : 'My Submissions', href: '/submissions', icon: 'folder' },
   ];
 
   return (

@@ -9,3 +9,13 @@ export async function getSession() {
     return null;
   }
 }
+
+export const ADMIN_EMAILS = [
+  'arun@techxle.com',
+  'subiksha@techxle.com'
+];
+
+export function isAdmin(email?: string | null): boolean {
+  if (!email) return false;
+  return ADMIN_EMAILS.includes(email.toLowerCase());
+}
