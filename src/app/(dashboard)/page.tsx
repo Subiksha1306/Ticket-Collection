@@ -16,6 +16,7 @@ export default async function Dashboard() {
     orderBy: { updatedAt: 'desc' },
     take: 5,
     include: {
+      author: true,
       versions: {
         where: { isActive: true },
         take: 1
@@ -88,6 +89,9 @@ export default async function Dashboard() {
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Ticket Number</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Title</th>
+                {userIsAdmin && (
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Submitted By</th>
+                )}
                 <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Version</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Last Updated</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
@@ -113,6 +117,11 @@ export default async function Dashboard() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-[200px]">
                         <Link href={`/submissions/${sub.id}`} className="hover:underline block truncate">{currentVersion.title}</Link>
                       </td>
+                      {userIsAdmin && (
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {sub.author?.name || sub.author?.email || 'Unknown'}
+                        </td>
+                      )}
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         v{currentVersion.versionNumber}
                       </td>

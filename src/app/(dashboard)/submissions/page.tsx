@@ -13,6 +13,7 @@ export default async function MySubmissionsPage() {
     where: userIsAdmin ? undefined : { createdBy: userId },
     orderBy: { updatedAt: 'desc' },
     include: {
+      author: true,
       versions: {
         where: { isActive: true },
         take: 1
@@ -57,6 +58,9 @@ export default async function MySubmissionsPage() {
             <tr>
               <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Ticket Number</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Title</th>
+              {userIsAdmin && (
+                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Submitted By</th>
+              )}
               <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Version</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Last Updated</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
@@ -83,6 +87,11 @@ export default async function MySubmissionsPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-[250px]">
                       {currentVersion.title}
                     </td>
+                    {userIsAdmin && (
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {sub.author?.name || sub.author?.email || 'Unknown'}
+                      </td>
+                    )}
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       v{currentVersion.versionNumber}
                     </td>
