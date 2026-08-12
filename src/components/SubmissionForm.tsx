@@ -52,8 +52,28 @@ export default function SubmissionForm({ initialData, isEditMode = false }: Subm
     setError('');
 
     try {
-      // 1. Storage not implemented locally
-      const uploadedAttachments: any[] = [];
+      // 1. Upload new files if any
+      let uploadedAttachments: any[] = [];
+      
+      if (files.length > 0) {
+        const formData = new FormData();
+        files.forEach(file => {
+          formData.append('files', file);
+        });
+
+        const uploadRes = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!uploadRes.ok) {
+          const uploadData = await uploadRes.json();
+          throw new Error(uploadData.error || 'Failed to upload files.');
+        }
+
+        const uploadData = await uploadRes.json();
+        uploadedAttachments = uploadData.attachments;
+      }
       
       // 2. Prepare payload for API
       const payload = {
