@@ -1,4 +1,4 @@
-import { getSession } from '@/lib/auth';
+import { getSession, isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import Link from 'next/link';
 
@@ -9,9 +9,10 @@ export default async function Dashboard() {
     return <div>Please log in</div>;
   }
   const userId = (session.user as any).id;
+  const userIsAdmin = isAdmin(session.user.email);
 
   const submissions = await prisma.submission.findMany({
-    where: { createdBy: userId },
+    where: userIsAdmin ? undefined : { createdBy: userId },
     orderBy: { updatedAt: 'desc' },
     take: 5,
     include: {
@@ -57,8 +58,12 @@ export default async function Dashboard() {
               </svg>
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 group-hover:text-[var(--primary)] transition-colors">My Submissions</h3>
-              <p className="text-sm text-gray-500 mt-1">View your records and version history.</p>
+              <h3 className="text-lg font-semibold text-gray-900 group-hover:text-[var(--primary)] transition-colors">
+                {userIsAdmin ? 'All Submissions' : 'My Submissions'}
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                {userIsAdmin ? 'View all records and version history.' : 'View your records and version history.'}
+              </p>
             </div>
             <div className="text-gray-300 group-hover:text-[var(--primary)] transition-colors">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
