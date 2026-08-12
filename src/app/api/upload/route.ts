@@ -24,9 +24,11 @@ export async function POST(request: Request) {
       const fileName = `${uuidv4()}.${fileExt}`;
       const filePath = `uploads/${fileName}`;
 
+      const arrayBuffer = await file.arrayBuffer();
+
       const { data, error } = await supabase.storage
         .from('ticket-attachments')
-        .upload(filePath, file, {
+        .upload(filePath, arrayBuffer, {
           contentType: file.type || 'application/octet-stream',
           upsert: false
         });
