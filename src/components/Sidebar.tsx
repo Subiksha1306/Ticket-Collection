@@ -14,7 +14,7 @@ export default function Sidebar({ userName, isAdmin }: { userName?: string | nul
     <div className="w-64 bg-[#1A1D2D] text-white flex flex-col h-full border-r border-gray-800">
       <div className="p-4 py-6 flex items-center justify-center border-b border-gray-800/50">
         <Link href="/" className="flex items-center w-full justify-center px-2">
-          <span className="text-xl font-bold tracking-wider">Ticket Tool</span>
+          <span className="text-xl font-bold tracking-wider">ImpactX</span>
         </Link>
       </div>
 
