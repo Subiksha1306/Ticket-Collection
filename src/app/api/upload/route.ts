@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 
       if (error) {
         console.error('Supabase upload error:', error);
-        throw new Error('Failed to upload file to storage');
+        throw new Error(`Failed to upload to Supabase: ${error.message}`);
       }
 
       // Get public URL
