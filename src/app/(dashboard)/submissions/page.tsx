@@ -44,11 +44,7 @@ export default async function MySubmissionsPage(props: {
           </h1>
           <p className="text-gray-500 mt-1">View and manage the records you've submitted.</p>
         </div>
-        <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg text-sm font-medium text-gray-500">
-          <button className="px-4 py-1.5 bg-white text-gray-900 shadow-sm rounded-md">All</button>
-          <button className="px-4 py-1.5 hover:text-gray-900 transition-colors">Active</button>
-          <button className="px-4 py-1.5 hover:text-gray-900 transition-colors">Recently Updated</button>
-        </div>
+
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">

@@ -172,9 +172,14 @@ export default function SubmissionForm({ initialData, isEditMode = false }: Subm
           <Link href={isEditMode ? `/submissions/${initialData!.id}` : '/'} className="secondary-btn">
             Cancel
           </Link>
-          <button type="submit" disabled={loading} className="primary-btn min-w-[150px]">
-            {loading ? 'Processing...' : (isEditMode ? 'Save as New Version' : 'Save & Continue')}
-          </button>
+          <div className="flex gap-3">
+            <button type="submit" disabled={loading} className="secondary-btn">
+              {loading ? 'Processing...' : 'Save as Draft'}
+            </button>
+            <button type="submit" disabled={loading} className="primary-btn min-w-[150px]">
+              {loading ? 'Processing...' : (isEditMode ? 'Save as New Version' : 'Save & Continue')}
+            </button>
+          </div>
         </div>
       </div>
 
