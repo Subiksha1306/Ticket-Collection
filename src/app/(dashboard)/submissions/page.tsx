@@ -2,15 +2,29 @@ import { getSession, isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import Link from 'next/link';
 
-export default async function MySubmissionsPage() {
+export default async function MySubmissionsPage(props: {
+  searchParams?: Promise<{ q?: string }> | { q?: string };
+}) {
   const session = await getSession();
   if (!session || !session.user) return null;
 
   const userIsAdmin = isAdmin(session.user.email);
   const userId = (session.user as any).id;
 
+  // Await searchParams in case it's a Promise (Next.js 15+)
+  const resolvedParams = props.searchParams ? await props.searchParams : {};
+  const q = resolvedParams?.q || '';
+
+  const whereClause: any = userIsAdmin ? {} : { createdBy: userId };
+  if (q) {
+    whereClause.OR = [
+      { ticketNumber: { contains: q, mode: 'insensitive' } },
+      { versions: { some: { isActive: true, title: { contains: q, mode: 'insensitive' } } } }
+    ];
+  }
+
   const submissions = await prisma.submission.findMany({
-    where: userIsAdmin ? undefined : { createdBy: userId },
+    where: whereClause,
     orderBy: { updatedAt: 'desc' },
     include: {
       author: true,
@@ -45,11 +59,15 @@ export default async function MySubmissionsPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
-            <input
-              type="text"
-              className="block w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] sm:text-sm"
-              placeholder="Search by ticket number or title..."
-            />
+            <form method="GET" className="w-full">
+              <input
+                type="text"
+                name="q"
+                defaultValue={q}
+                className="block w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] sm:text-sm"
+                placeholder="Search by ticket number or title..."
+              />
+            </form>
           </div>
         </div>
 
@@ -63,7 +81,6 @@ export default async function MySubmissionsPage() {
               )}
               <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Version</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Last Updated</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
               <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
             </tr>
           </thead>
@@ -97,9 +114,6 @@ export default async function MySubmissionsPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(sub.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="badge-active">Active</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <Link href={`/submissions/${sub.id}`} className="text-[var(--primary)] hover:text-[var(--primary-hover)] inline-flex items-center gap-1">
