@@ -10,10 +10,10 @@ export default function LogoutButton({ initial }: { initial: string }) {
   return (
     <button 
       onClick={handleLogout}
-      className="flex items-center justify-center w-8 h-8 rounded-full bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] transition-colors text-sm font-medium"
+      className="flex items-center justify-center px-4 py-2 rounded-md bg-[var(--primary)] text-white hover:bg-indigo-700 transition-colors text-sm font-medium shadow-sm"
       title="Sign Out"
     >
-      {initial}
+      Signout
     </button>
   );
 }
