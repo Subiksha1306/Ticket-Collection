@@ -26,21 +26,25 @@ export async function GET(
     const url = new URL(request.url);
     const isPreview = url.searchParams.get('preview') === 'true';
 
-    // Create a short-lived signed URL to download the file
-    // Since the bucket is private, we need a signed URL for the client to access it.
+    // Download the file directly from Supabase and stream it to the client
     const filePath = `uploads/${attachment.storedFileName}`;
     const { data, error } = await supabase.storage
       .from('ticket-attachments')
-      .createSignedUrl(filePath, 60, isPreview ? undefined : {
-        download: attachment.originalFileName // This forces a file download with the original name
-      });
+      .download(filePath);
 
-    if (error || !data?.signedUrl) {
-      console.error('Supabase signed URL error:', error);
-      return NextResponse.json({ error: 'Failed to generate download link' }, { status: 500 });
+    if (error || !data) {
+      console.error('Supabase download error:', error);
+      return NextResponse.json({ error: 'Failed to download file' }, { status: 500 });
     }
 
-    return NextResponse.redirect(data.signedUrl);
+    return new NextResponse(data, {
+      headers: {
+        'Content-Type': attachment.fileType || 'application/octet-stream',
+        'Content-Disposition': isPreview 
+          ? `inline; filename="${attachment.originalFileName}"` 
+          : `attachment; filename="${attachment.originalFileName}"`,
+      }
+    });
   } catch (error) {
     console.error('Download route error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
