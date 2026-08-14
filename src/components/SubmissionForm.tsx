@@ -254,7 +254,6 @@ export default function SubmissionForm({ initialData, isEditMode = false }: Subm
             </ul>
           </div>
         )}
-        )}
       </div>
       </fieldset>
     </form>
