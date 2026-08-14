@@ -114,8 +114,9 @@ export default function SubmissionForm({ initialData, isEditMode = false }: Subm
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-6 max-w-7xl mx-auto items-start">
-      <div className="flex-1 space-y-6">
+    <form onSubmit={handleSubmit}>
+      <fieldset disabled={loading} className="flex flex-col md:flex-row gap-6 max-w-7xl mx-auto items-start disabled:opacity-70 transition-opacity">
+        <div className="flex-1 space-y-6 w-full">
         {error && (
           <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm">
             {error}
@@ -173,7 +174,7 @@ export default function SubmissionForm({ initialData, isEditMode = false }: Subm
         </div>
 
         <div className="flex justify-between pt-2">
-          <Link href={isEditMode ? `/submissions/${initialData!.id}` : '/'} className="secondary-btn">
+          <Link href={isEditMode ? `/submissions/${initialData!.id}` : '/'} className={`secondary-btn ${loading ? 'pointer-events-none' : ''}`}>
             Cancel
           </Link>
           <div className="flex gap-3">
@@ -191,8 +192,8 @@ export default function SubmissionForm({ initialData, isEditMode = false }: Subm
         <h3 className="font-semibold text-gray-900">Attachments</h3>
         
         <div 
-          className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50 transition-colors"
-          onClick={() => fileInputRef.current?.click()}
+          className={`border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-center transition-colors ${loading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-gray-50'}`}
+          onClick={() => !loading && fileInputRef.current?.click()}
         >
           <svg className="w-8 h-8 text-[var(--primary)] mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -253,7 +254,9 @@ export default function SubmissionForm({ initialData, isEditMode = false }: Subm
             </ul>
           </div>
         )}
+        )}
       </div>
+      </fieldset>
     </form>
   );
 }
