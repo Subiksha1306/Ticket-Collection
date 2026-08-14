@@ -117,7 +117,7 @@ export default async function SubmissionHistoryPage({ params }: { params: Promis
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-gray-900 truncate group-hover:text-[var(--primary)] transition-colors">{att.originalFileName}</p>
-                            <p className="text-xs text-gray-500">{formatBytes(Number(att.fileSize))} • {att.fileType.split('/')[1]?.toUpperCase() || 'FILE'}</p>
+                            <p className="text-xs text-gray-500">{formatBytes(Number(att.fileSize))} • {att.originalFileName.split('.').pop()?.toUpperCase() || 'FILE'}</p>
                           </div>
                           <div className="flex gap-3 text-gray-400 group-hover:text-[var(--primary)] mr-2">
                             {(att.fileType.startsWith('image/') || att.fileType.startsWith('text/') || att.fileType.startsWith('video/') || att.fileType.startsWith('audio/') || att.fileType === 'application/pdf' || att.fileType === 'application/json') && (
