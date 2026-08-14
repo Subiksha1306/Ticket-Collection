@@ -21,7 +21,7 @@ export default function Sidebar({ userName, isAdmin }: { userName?: string | nul
       <div className="flex-1 overflow-y-auto py-6">
         <nav className="px-4 space-y-1">
           {navItems.map((item) => {
-            const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+            const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href) && pathname !== '/submissions/new');
             return (
               <Link
                 key={item.name}
