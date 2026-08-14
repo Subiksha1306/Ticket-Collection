@@ -27,8 +27,8 @@ export default async function SubmissionDetailsPage({ params }: { params: Promis
     redirect('/');
   }
 
-  const currentVersion = submission.versions.find(v => v.isActive) || submission.versions[0];
-  if (!currentVersion) return <div>No active version found.</div>;
+  const currentVersion = submission.versions[0];
+  if (!currentVersion) return <div>No version found.</div>;
 
   const canEdit = (session.user as any)?.id === submission.createdBy;
 
@@ -47,7 +47,11 @@ export default async function SubmissionDetailsPage({ params }: { params: Promis
         <div>
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-3xl font-bold text-gray-900">{submission.ticketNumber}</h1>
-            <span className="badge-active">ACTIVE • VERSION {currentVersion.versionNumber}</span>
+            {currentVersion.isDraft ? (
+              <span className="px-2 py-0.5 rounded text-xs bg-amber-100 text-amber-700 font-bold uppercase tracking-wider">DRAFT • VERSION {currentVersion.versionNumber}</span>
+            ) : (
+              <span className="badge-active">ACTIVE • VERSION {currentVersion.versionNumber}</span>
+            )}
           </div>
         </div>
         <div className="flex gap-3">
@@ -148,8 +152,9 @@ export default async function SubmissionDetailsPage({ params }: { params: Promis
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center gap-2">
-                        <h4 className={`text-sm font-bold ${version.isActive ? 'text-gray-900' : 'text-gray-600'}`}>v{version.versionNumber}</h4>
+                        <h4 className={`text-sm font-bold ${version.isActive || version.isDraft ? 'text-gray-900' : 'text-gray-600'}`}>v{version.versionNumber}</h4>
                         {version.isActive && <span className="text-[10px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold uppercase">Current</span>}
+                        {version.isDraft && <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold uppercase">Draft</span>}
                       </div>
                       <p className="text-xs text-gray-500 mt-1">
                         {new Date(version.createdAt).toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}

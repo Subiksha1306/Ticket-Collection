@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { ticketNumber, title, description, newAttachments } = await request.json()
+    const { ticketNumber, title, description, isDraft = false, newAttachments } = await request.json()
     
     if (!ticketNumber || !title || !description) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -64,7 +64,8 @@ export async function POST(request: Request) {
             title,
             description,
             createdBy: userId,
-            isActive: true,
+            isActive: !isDraft,
+            isDraft,
             attachments: {
               create: attachments
             }

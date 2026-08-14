@@ -41,8 +41,11 @@ export default function SubmissionForm({ initialData, isEditMode = false }: Subm
     setExistingAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement;
+    const isDraft = submitter?.value === 'draft';
+
     if (!ticketNumber || !title || !description) {
       setError('Please fill in all required fields.');
       return;
@@ -80,6 +83,7 @@ export default function SubmissionForm({ initialData, isEditMode = false }: Subm
         ticketNumber,
         title,
         description,
+        isDraft,
         newAttachments: uploadedAttachments,
         existingAttachments: isEditMode ? existingAttachments : []
       };
@@ -173,10 +177,10 @@ export default function SubmissionForm({ initialData, isEditMode = false }: Subm
             Cancel
           </Link>
           <div className="flex gap-3">
-            <button type="submit" disabled={loading} className="secondary-btn">
+            <button type="submit" name="action" value="draft" disabled={loading} className="secondary-btn">
               {loading ? 'Processing...' : 'Save as Draft'}
             </button>
-            <button type="submit" disabled={loading} className="primary-btn min-w-[150px]">
+            <button type="submit" name="action" value="publish" disabled={loading} className="primary-btn min-w-[150px]">
               {loading ? 'Processing...' : (isEditMode ? 'Save as New Version' : 'Save & Continue')}
             </button>
           </div>

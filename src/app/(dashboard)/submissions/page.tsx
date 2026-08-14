@@ -19,7 +19,7 @@ export default async function MySubmissionsPage(props: {
   if (q) {
     whereClause.OR = [
       { ticketNumber: { contains: q, mode: 'insensitive' } },
-      { versions: { some: { isActive: true, title: { contains: q, mode: 'insensitive' } } } }
+      { versions: { some: { title: { contains: q, mode: 'insensitive' } } } }
     ];
   }
 
@@ -29,7 +29,7 @@ export default async function MySubmissionsPage(props: {
     include: {
       author: true,
       versions: {
-        where: { isActive: true },
+        orderBy: { versionNumber: 'desc' },
         take: 1
       }
     }
@@ -106,7 +106,7 @@ export default async function MySubmissionsPage(props: {
                       </td>
                     )}
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      v{currentVersion.versionNumber}
+                      v{currentVersion.versionNumber} {currentVersion.isDraft && <span className="ml-2 px-2 py-0.5 rounded text-xs bg-amber-100 text-amber-700 font-medium border border-amber-200">Draft</span>}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(sub.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}

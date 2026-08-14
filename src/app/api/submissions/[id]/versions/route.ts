@@ -45,7 +45,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     
     if (!submission) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-    const { title, description, existingAttachments = [], newAttachments = [] } = await request.json()
+    const { title, description, existingAttachments = [], newAttachments = [], isDraft = false } = await request.json()
     
     if (!title || !description) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -74,11 +74,18 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     ]
 
     // Use a transaction to set old versions to inactive and create new version
-    const [_, newVersion] = await prisma.$transaction([
-      prisma.submissionVersion.updateMany({
-        where: { submissionId: id, isActive: true },
-        data: { isActive: false }
-      }),
+    const transactionOps: any[] = [];
+    
+    if (!isDraft) {
+      transactionOps.push(
+        prisma.submissionVersion.updateMany({
+          where: { submissionId: id, isActive: true },
+          data: { isActive: false }
+        })
+      );
+    }
+
+    transactionOps.push(
       prisma.submissionVersion.create({
         data: {
           submissionId: id,
@@ -86,7 +93,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
           title,
           description,
           createdBy: userId,
-          isActive: true,
+          isActive: !isDraft,
+          isDraft,
           attachments: {
             create: allAttachmentsToCreate
           }
@@ -95,7 +103,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
           attachments: true
         }
       })
-    ])
+    );
+
+    const results = await prisma.$transaction(transactionOps);
+    const newVersion = results[results.length - 1];
 
     return NextResponse.json(newVersion)
   } catch (error) {
