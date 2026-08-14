@@ -15,9 +15,7 @@ export default async function LoginPage() {
         <div className="absolute inset-0 z-0 opacity-20 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-blue-700 via-purple-800 to-[#1A1D2D]"></div>
         
         <div className="relative z-10 text-white max-w-md">
-          <div className="flex items-center gap-3 mb-16">
-            <img src="/logo-sidebar.png" alt="Techxle" className="h-10 w-auto" />
-          </div>
+
 
           <h1 className="text-5xl font-bold leading-tight mb-6">
             Data Collection Portal
