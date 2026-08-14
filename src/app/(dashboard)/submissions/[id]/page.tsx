@@ -108,11 +108,8 @@ export default async function SubmissionDetailsPage({ params }: { params: Promis
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {currentVersion.attachments.map(att => (
-                    <a 
+                    <div 
                       key={att.id}
-                      href={`/api/attachments/${att.id}/download`} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
                       className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-[var(--primary)] hover:shadow-sm transition-all group bg-white"
                     >
                       <div className="w-10 h-10 rounded bg-red-50 text-red-500 flex items-center justify-center group-hover:bg-red-100 transition-colors">
@@ -124,12 +121,20 @@ export default async function SubmissionDetailsPage({ params }: { params: Promis
                         <p className="text-sm font-medium text-gray-900 truncate group-hover:text-[var(--primary)] transition-colors">{att.originalFileName}</p>
                         <p className="text-xs text-gray-500">{(att.fileSize / 1024 / 1024).toFixed(1)} MB • {att.fileType.split('/')[1]?.toUpperCase() || 'FILE'}</p>
                       </div>
-                      <div className="text-gray-400 group-hover:text-[var(--primary)]">
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
+                      <div className="flex gap-3 text-gray-400 group-hover:text-[var(--primary)] mr-2">
+                        <a href={`/api/attachments/${att.id}/download?preview=true`} target="_blank" title="Preview" className="hover:text-indigo-900 transition-colors">
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        </a>
+                        <a href={`/api/attachments/${att.id}/download`} title="Download" className="hover:text-indigo-900 transition-colors">
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                        </a>
                       </div>
-                    </a>
+                    </div>
                   ))}
                 </div>
               )}

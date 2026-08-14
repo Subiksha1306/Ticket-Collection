@@ -23,12 +23,15 @@ export async function GET(
       return NextResponse.json({ error: 'Attachment not found' }, { status: 404 });
     }
 
+    const url = new URL(request.url);
+    const isPreview = url.searchParams.get('preview') === 'true';
+
     // Create a short-lived signed URL to download the file
     // Since the bucket is private, we need a signed URL for the client to access it.
     const filePath = `uploads/${attachment.storedFileName}`;
     const { data, error } = await supabase.storage
       .from('ticket-attachments')
-      .createSignedUrl(filePath, 60, {
+      .createSignedUrl(filePath, 60, isPreview ? undefined : {
         download: attachment.originalFileName // This forces a file download with the original name
       });
 
