@@ -50,7 +50,7 @@ export default async function SubmissionDetailsPage({ params }: { params: Promis
             {currentVersion.isDraft ? (
               <span className="px-2 py-0.5 rounded text-xs bg-amber-100 text-amber-700 font-bold uppercase tracking-wider">DRAFT • VERSION {currentVersion.versionNumber}</span>
             ) : (
-              <span className="badge-active">ACTIVE • VERSION {currentVersion.versionNumber}</span>
+              <span className="px-2 py-0.5 rounded text-xs bg-indigo-100 text-indigo-700 font-bold uppercase tracking-wider border border-indigo-200">VERSION {currentVersion.versionNumber}</span>
             )}
           </div>
         </div>

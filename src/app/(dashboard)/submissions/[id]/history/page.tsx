@@ -71,7 +71,7 @@ export default async function SubmissionHistoryPage({ params }: { params: Promis
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     {version.isActive && (
-                      <span className="badge-active">ACTIVE</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] bg-indigo-100 text-indigo-700 font-bold uppercase tracking-wider border border-indigo-200">CURRENT</span>
                     )}
                     <span className="text-sm text-gray-500 font-medium">
                       {new Date(version.createdAt).toLocaleString(undefined, {
