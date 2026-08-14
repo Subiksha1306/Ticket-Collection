@@ -38,7 +38,7 @@ export default async function MySubmissionsPage(props: {
   // Filter out submissions where the latest version is a draft
   submissions = submissions.filter(sub => {
     const latestVersion = sub.versions[0];
-    return latestVersion && !latestVersion.isDraft;
+    return latestVersion && latestVersion.isDraft;
   });
 
   return (
@@ -46,9 +46,9 @@ export default async function MySubmissionsPage(props: {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            {userIsAdmin ? 'All Submissions (Admin)' : 'My Submissions'}
+            {userIsAdmin ? 'All Drafts (Admin)' : 'My Drafts'}
           </h1>
-          <p className="text-gray-500 mt-1">View and manage the records you've submitted.</p>
+          <p className="text-gray-500 mt-1">View and manage your saved drafts.</p>
         </div>
 
       </div>
@@ -90,7 +90,7 @@ export default async function MySubmissionsPage(props: {
             {submissions.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-6 py-8 text-center text-gray-500 text-sm">
-                  No submissions found.
+                  No drafts found.
                 </td>
               </tr>
             ) : (
@@ -118,11 +118,8 @@ export default async function MySubmissionsPage(props: {
                       {new Date(sub.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Link href={`/submissions/${sub.id}`} className="text-[var(--primary)] hover:text-[var(--primary-hover)] inline-flex items-center gap-1">
-                        View Details
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
+                      <Link href={`/submissions/${sub.id}`} className="text-[var(--primary)] hover:text-indigo-900 transition-colors">
+                        View
                       </Link>
                     </td>
                   </tr>

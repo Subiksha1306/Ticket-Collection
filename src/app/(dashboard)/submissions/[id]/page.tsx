@@ -2,6 +2,7 @@ import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import DraftActions from './DraftActions';
 
 export default async function SubmissionDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
@@ -55,19 +56,25 @@ export default async function SubmissionDetailsPage({ params }: { params: Promis
           </div>
         </div>
         <div className="flex gap-3">
-          {canEdit && (
-            <Link href={`/submissions/${submission.id}/edit`} className="secondary-btn flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-              </svg>
-              Edit
-            </Link>
+          {canEdit && currentVersion.isDraft ? (
+            <DraftActions submissionId={submission.id} versionId={currentVersion.id} />
+          ) : (
+            <>
+              {canEdit && (
+                <Link href={`/submissions/${submission.id}/edit`} className="secondary-btn flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                  Edit
+                </Link>
+              )}
+              <button className="secondary-btn flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                </svg>
+              </button>
+            </>
           )}
-          <button className="secondary-btn flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-            </svg>
-          </button>
         </div>
       </header>
 
