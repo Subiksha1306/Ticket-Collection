@@ -36,10 +36,14 @@ export default async function SubmissionDetailsPage({ params }: { params: Promis
     redirect('/');
   }
 
+  const userId = (session.user as any)?.id;
+  const canEdit = userId === submission.createdBy;
+
+  // Filter out drafts if the user is not the creator
+  submission.versions = submission.versions.filter(v => !v.isDraft || canEdit);
+
   const currentVersion = submission.versions[0];
   if (!currentVersion) return <div>No version found.</div>;
-
-  const canEdit = (session.user as any)?.id === submission.createdBy;
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">

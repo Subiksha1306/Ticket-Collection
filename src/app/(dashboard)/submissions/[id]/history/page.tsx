@@ -29,12 +29,9 @@ export default async function SubmissionHistoryPage({ params }: { params: Promis
   }
 
   const userId = session.user ? (session.user as any).id : null;
+  const canEdit = userId === submission.createdBy;
 
-  if (submission.createdBy !== userId) {
-    redirect('/');
-  }
-
-  const versions = await prisma.submissionVersion.findMany({
+  let versions = await prisma.submissionVersion.findMany({
     where: { submissionId: id },
     orderBy: { versionNumber: 'desc' },
     include: {
@@ -42,6 +39,9 @@ export default async function SubmissionHistoryPage({ params }: { params: Promis
       author: { select: { name: true, email: true } }
     }
   });
+
+  // Filter out drafts if the user is not the creator
+  versions = versions.filter(v => !v.isDraft || canEdit);
 
   const activeVersion = versions.find((v: any) => v.isActive) || versions[0];
 
