@@ -35,14 +35,7 @@ export default async function SubmissionDetailsPage({ params }: { params: Promis
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-        <Link href="/submissions" className="hover:text-gray-900 transition-colors flex items-center gap-1">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Back to My Submissions
-        </Link>
-      </div>
+
 
       <header className="flex justify-between items-start">
         <div>

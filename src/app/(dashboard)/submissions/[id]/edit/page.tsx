@@ -44,9 +44,7 @@ export default async function EditSubmissionPage({ params }: { params: Promise<{
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-        <Link href={`/submissions/${submission.id}`} className="hover:text-gray-900 transition-colors">Back to Submission Details</Link>
-      </div>
+
 
       <header className="mb-6 flex justify-between items-center">
         <div>

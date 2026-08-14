@@ -9,11 +9,7 @@ export default async function NewSubmissionPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-        <Link href="/submissions" className="hover:text-gray-900 transition-colors">My Submissions</Link>
-        <span>/</span>
-        <span className="text-gray-900 font-medium">New Submission</span>
-      </div>
+
 
       <header className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">New Submission</h1>
