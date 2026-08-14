@@ -4,6 +4,14 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import DraftActions from './DraftActions';
 
+function formatBytes(bytes: number) {
+  if (!bytes || bytes === 0) return '0 KB';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
 export default async function SubmissionDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
   if (!session) redirect('/login');
@@ -119,7 +127,7 @@ export default async function SubmissionDetailsPage({ params }: { params: Promis
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate group-hover:text-[var(--primary)] transition-colors">{att.originalFileName}</p>
-                        <p className="text-xs text-gray-500">{(att.fileSize / 1024 / 1024).toFixed(1)} MB • {att.fileType.split('/')[1]?.toUpperCase() || 'FILE'}</p>
+                        <p className="text-xs text-gray-500">{formatBytes(Number(att.fileSize))} • {att.fileType.split('/')[1]?.toUpperCase() || 'FILE'}</p>
                       </div>
                       <div className="flex gap-3 text-gray-400 group-hover:text-[var(--primary)] mr-2">
                         {(att.fileType.startsWith('image/') || att.fileType.startsWith('text/') || att.fileType.startsWith('video/') || att.fileType.startsWith('audio/') || att.fileType === 'application/pdf' || att.fileType === 'application/json') && (
