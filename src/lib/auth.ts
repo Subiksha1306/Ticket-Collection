@@ -12,7 +12,8 @@ export async function getSession() {
 
 export const ADMIN_EMAILS = [
   'arun@techxle.com',
-  'subiksha@techxle.com'
+  'subiksha@techxle.com',
+  'ramesh@techxle.com'
 ];
 
 export function isAdmin(email?: string | null): boolean {
