@@ -2,6 +2,7 @@ import { getSession, isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import Link from 'next/link';
 import SearchInput from '@/components/SearchInput';
+import ExportPdfButton from '@/components/ExportPdfButton';
 
 export default async function MySubmissionsPage(props: {
   searchParams?: Promise<{ q?: string }> | { q?: string };
@@ -42,6 +43,15 @@ export default async function MySubmissionsPage(props: {
     return latestVersion && !latestVersion.isDraft;
   });
 
+  // Prepare data for PDF export (only needed if admin, but safe to prepare for all)
+  const exportData = submissions.map(sub => ({
+    ticketNumber: sub.ticketNumber,
+    title: sub.versions[0]?.title || 'Unknown',
+    author: sub.author?.name || sub.author?.email || 'Unknown',
+    version: `v${sub.versions[0]?.versionNumber || 1}`,
+    lastUpdated: new Date(sub.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+  }));
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -51,7 +61,9 @@ export default async function MySubmissionsPage(props: {
           </h1>
           <p className="text-gray-500 mt-1">View and manage the records you've submitted.</p>
         </div>
-
+        {userIsAdmin && (
+          <ExportPdfButton data={exportData} />
+        )}
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
