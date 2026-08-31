@@ -1,11 +1,17 @@
-import { getSession } from '@/lib/auth';
+import { getSession, isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { redirect } from 'next/navigation';
 
 export default async function AwardsPage() {
   const session = await getSession();
   
   if (!session?.user) {
     return <div>Please log in</div>;
+  }
+
+  const userIsAdmin = isAdmin(session.user.email);
+  if (!userIsAdmin) {
+    return redirect('/');
   }
 
   // Calculate start of current month

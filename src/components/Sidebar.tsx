@@ -8,8 +8,10 @@ export default function Sidebar({ userName, isAdmin }: { userName?: string | nul
   const navItems = [
     { name: 'Home', href: '/', icon: 'home' },
     { name: isAdmin ? 'All Submissions' : 'My Submissions', href: '/submissions', icon: 'folder' },
-    { name: 'Awards & Summary', href: '/awards', icon: 'star' },
-    ...(isAdmin ? [{ name: 'Admin Export', href: '/export', icon: 'download' }] : []),
+    ...(isAdmin ? [
+      { name: 'Awards & Summary', href: '/awards', icon: 'star' },
+      { name: 'Admin Export', href: '/export', icon: 'download' }
+    ] : []),
   ];
 
   return (
