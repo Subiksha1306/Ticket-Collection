@@ -53,3 +53,13 @@
     @apply bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide uppercase;
   }
 }
+
+@keyframes marquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+.animate-marquee {
+  display: inline-block;
+  animation: marquee 25s linear infinite;
+}
