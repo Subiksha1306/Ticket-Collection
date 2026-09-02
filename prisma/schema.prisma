@@ -134,3 +134,12 @@ model HallOfFame {
   @@unique([month, year])
   @@map("hall_of_fame")
 }
+
+model SystemSettings {
+  id             String   @id @default("global") @db.VarChar(50)
+  azurePatToken  String?  @map("azure_pat_token")
+  azureBoardUrl  String?  @map("azure_board_url")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
+}
