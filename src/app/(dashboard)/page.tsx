@@ -31,14 +31,6 @@ export default async function Dashboard() {
         <p className="text-gray-500">Here's a quick overview of your recent tickets.</p>
       </div>
 
-      <div className="bg-gradient-to-r from-[var(--primary)] to-indigo-500 rounded-lg overflow-hidden relative shadow-sm border border-indigo-200">
-        <div className="py-2.5 px-4 overflow-hidden whitespace-nowrap flex items-center">
-          <div className="text-white text-sm font-medium animate-marquee w-full">
-            🚀 <span className="font-bold">Latest Updates:</span> Welcome to ImpactX! Submit your innovative ideas • New Hall of Fame features are now live • Check out the latest winners in the Awards section 🏆 • Admins can now configure Azure DevOps settings!
-          </div>
-        </div>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Link href="/submissions/new" className="card hover:border-[var(--primary)] transition-colors group cursor-pointer block">
           <div className="flex items-start gap-4">
