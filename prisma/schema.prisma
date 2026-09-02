@@ -120,3 +120,17 @@ model Attachment {
   
   @@map("attachments")
 }
+
+model HallOfFame {
+  id             String   @id @default(uuid()) @db.Uuid
+  month          Int
+  year           Int
+  winnerName     String   @map("winner_name")
+  runnerUpName   String   @map("runner_up_name")
+  
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@unique([month, year])
+  @@map("hall_of_fame")
+}
