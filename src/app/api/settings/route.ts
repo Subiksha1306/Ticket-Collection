@@ -28,18 +28,20 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { azurePatToken, azureBoardUrl } = body;
+    const { azurePatToken, azureBoardUrl, bannerText } = body;
 
     const settings = await prisma.systemSettings.upsert({
       where: { id: 'global' },
       update: {
         azurePatToken,
-        azureBoardUrl
+        azureBoardUrl,
+        bannerText
       },
       create: {
         id: 'global',
         azurePatToken,
-        azureBoardUrl
+        azureBoardUrl,
+        bannerText
       }
     });
 

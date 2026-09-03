@@ -139,6 +139,7 @@ model SystemSettings {
   id             String   @id @default("global") @db.VarChar(50)
   azurePatToken  String?  @map("azure_pat_token")
   azureBoardUrl  String?  @map("azure_board_url")
+  bannerText     String?  @map("banner_text")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
   @@map("system_settings")

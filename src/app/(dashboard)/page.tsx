@@ -24,12 +24,27 @@ export default async function Dashboard() {
     }
   });
 
+  const settings = await prisma.systemSettings.findUnique({
+    where: { id: 'global' },
+    select: { bannerText: true }
+  });
+
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {session.user?.name || 'User'}!</h1>
         <p className="text-gray-500">Here's a quick overview of your recent tickets.</p>
       </div>
+
+      {settings?.bannerText && (
+        <div className="bg-gradient-to-r from-[var(--primary)] to-indigo-500 rounded-lg overflow-hidden relative shadow-sm border border-indigo-200">
+          <div className="py-2.5 px-4 overflow-hidden whitespace-nowrap flex items-center">
+            <div className="text-white text-sm font-medium animate-marquee w-full">
+              {settings.bannerText}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Link href="/submissions/new" className="card hover:border-[var(--primary)] transition-colors group cursor-pointer block">

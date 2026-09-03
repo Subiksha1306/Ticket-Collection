@@ -6,6 +6,7 @@ export default function SettingsForm() {
   const router = useRouter();
   const [azurePatToken, setAzurePatToken] = useState('');
   const [azureBoardUrl, setAzureBoardUrl] = useState('');
+  const [bannerText, setBannerText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -15,6 +16,7 @@ export default function SettingsForm() {
       .then(data => {
         if (data.azurePatToken) setAzurePatToken(data.azurePatToken);
         if (data.azureBoardUrl) setAzureBoardUrl(data.azureBoardUrl);
+        if (data.bannerText) setBannerText(data.bannerText);
         setIsLoading(false);
       })
       .catch(err => {
@@ -33,7 +35,8 @@ export default function SettingsForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           azurePatToken,
-          azureBoardUrl
+          azureBoardUrl,
+          bannerText
         })
       });
 
@@ -67,29 +70,52 @@ export default function SettingsForm() {
         Configure your Azure DevOps Personal Access Token (PAT) and Board URL. This allows the system to fetch ticket details directly from Azure DevOps.
       </p>
       
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Banner Settings */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Azure Board URL or Organization</label>
-          <input
-            type="text"
-            placeholder="e.g. https://dev.azure.com/myorganization/myproject"
-            value={azureBoardUrl}
-            onChange={(e) => setAzureBoardUrl(e.target.value)}
-            className="input-field w-full"
-          />
+          <h4 className="text-sm font-bold text-gray-900 mb-2 border-b pb-2">Home Page Banner</h4>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Scrolling Announcement Text</label>
+            <textarea
+              placeholder="e.g. Welcome to ImpactX! 🚀 Check out our latest updates..."
+              value={bannerText}
+              onChange={(e) => setBannerText(e.target.value)}
+              className="input-field w-full h-20 resize-none"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              Leave this blank to hide the scrolling banner on the Home page.
+            </p>
+          </div>
         </div>
+
+        {/* Azure DevOps Settings */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Personal Access Token (PAT)</label>
-          <input
-            type="password"
-            placeholder="Enter your Azure DevOps PAT"
-            value={azurePatToken}
-            onChange={(e) => setAzurePatToken(e.target.value)}
-            className="input-field w-full"
-          />
-          <p className="text-xs text-gray-400 mt-1">
-            This token will be stored securely and used to authenticate requests to Azure DevOps.
-          </p>
+          <h4 className="text-sm font-bold text-gray-900 mb-2 border-b pb-2">Azure DevOps</h4>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Azure Board URL or Organization</label>
+              <input
+                type="text"
+                placeholder="e.g. https://dev.azure.com/myorganization/myproject"
+                value={azureBoardUrl}
+                onChange={(e) => setAzureBoardUrl(e.target.value)}
+                className="input-field w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Personal Access Token (PAT)</label>
+              <input
+                type="password"
+                placeholder="Enter your Azure DevOps PAT"
+                value={azurePatToken}
+                onChange={(e) => setAzurePatToken(e.target.value)}
+                className="input-field w-full"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                This token will be stored securely and used to authenticate requests to Azure DevOps.
+              </p>
+            </div>
+          </div>
         </div>
         
         <div className="pt-4">
