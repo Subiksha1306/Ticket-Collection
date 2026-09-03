@@ -22,9 +22,48 @@ export default function SubmissionForm({ initialData, isEditMode = false }: Subm
   const [existingAttachments, setExistingAttachments] = useState(initialData?.attachments || []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isFetchingAzure, setIsFetchingAzure] = useState(false);
+  const [azureSuccessMessage, setAzureSuccessMessage] = useState('');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  const handleFetchAzureTicket = async () => {
+    if (!ticketNumber) {
+      setError('Please enter a ticket number first.');
+      return;
+    }
+
+    // Usually ADO tickets are just numbers (e.g., 1234), strip out non-digits just in case
+    const numericId = ticketNumber.replace(/\D/g, '');
+    if (!numericId) {
+      setError('Azure DevOps ticket numbers must contain numeric digits.');
+      return;
+    }
+
+    setIsFetchingAzure(true);
+    setError('');
+    setAzureSuccessMessage('');
+
+    try {
+      const res = await fetch(`/api/azure/fetch-ticket?ticketNumber=${numericId}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to fetch from Azure DevOps.');
+      }
+
+      if (data.title) setTitle(data.title);
+      if (data.description) setDescription(data.description);
+      
+      setAzureSuccessMessage(`Successfully fetched details for ticket #${numericId}`);
+      setTimeout(() => setAzureSuccessMessage(''), 5000);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsFetchingAzure(false);
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -122,6 +161,11 @@ export default function SubmissionForm({ initialData, isEditMode = false }: Subm
             {error}
           </div>
         )}
+        {azureSuccessMessage && (
+          <div className="p-4 bg-green-50 border border-green-200 text-green-700 rounded-md text-sm">
+            {azureSuccessMessage}
+          </div>
+        )}
 
         <div className="card">
           <h2 className="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Ticket Details</h2>
@@ -130,15 +174,37 @@ export default function SubmissionForm({ initialData, isEditMode = false }: Subm
               <label className="block text-sm font-semibold text-gray-700 mb-1">
                 Ticket Number <span className="text-red-500">*</span>
               </label>
-              <input 
-                type="text" 
-                value={ticketNumber}
-                onChange={(e) => setTicketNumber(e.target.value)}
-                disabled={isEditMode}
-                className={`input-field ${isEditMode ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                placeholder="e.g. INC-12345"
-                required
-              />
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  value={ticketNumber}
+                  onChange={(e) => setTicketNumber(e.target.value)}
+                  disabled={isEditMode}
+                  className={`input-field flex-1 ${isEditMode ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  placeholder="e.g. 12345"
+                  required
+                />
+                {!isEditMode && (
+                  <button 
+                    type="button" 
+                    onClick={handleFetchAzureTicket}
+                    disabled={isFetchingAzure || !ticketNumber}
+                    className="secondary-btn flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-50 h-[42px]"
+                  >
+                    {isFetchingAzure ? (
+                      <svg className="animate-spin h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M2 13h10v10H2V13zM14 2h8v10h-8V2zM2 2h10v9H2V2zm12 12h8v9h-8v-9z"/>
+                      </svg>
+                    )}
+                    Fetch from Azure
+                  </button>
+                )}
+              </div>
             </div>
 
             <div>
