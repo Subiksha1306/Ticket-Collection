@@ -8,6 +8,9 @@ export default function Sidebar({ userName, isAdmin }: { userName?: string | nul
   const navItems = [
     { name: 'Home', href: '/', icon: 'home' },
     { name: isAdmin ? 'All Submissions' : 'My Submissions', href: '/submissions', icon: 'folder' },
+    ...(isAdmin ? [
+      { name: 'Manager Dashboard', href: '/manager', icon: 'chart' }
+    ] : []),
     { name: 'Awards & Summary', href: '/awards', icon: 'star' },
     ...(isAdmin ? [
       { name: 'Admin', href: '/admin', icon: 'settings' }
@@ -45,6 +48,11 @@ export default function Sidebar({ userName, isAdmin }: { userName?: string | nul
                 {item.icon === 'folder' && (
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                  </svg>
+                )}
+                {item.icon === 'chart' && (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 )}
                 {item.icon === 'star' && (
