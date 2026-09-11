@@ -6,7 +6,7 @@ import { prisma } from '@/lib/db';
 export default async function ManagerDashboardPage({
   searchParams,
 }: {
-  searchParams: { month?: string };
+  searchParams: Promise<{ month?: string }>;
 }) {
   const session = await getSession();
   
@@ -20,7 +20,8 @@ export default async function ManagerDashboardPage({
   }
 
   // Calculate selected month bounds
-  const monthParam = searchParams.month;
+  const params = await searchParams;
+  const monthParam = params.month;
   let startOfMonth: Date;
   let endOfMonth: Date;
 
