@@ -73,6 +73,10 @@ model Submission {
   createdBy        String   @db.Uuid @map("created_by")
   currentVersionId String?  @db.Uuid @map("current_version_id")
   
+  status           String   @default("Submitted")
+  score            Int?
+  category         String?
+
   author           User     @relation(fields: [createdBy], references: [id])
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
