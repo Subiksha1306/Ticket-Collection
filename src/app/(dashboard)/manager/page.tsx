@@ -335,7 +335,7 @@ export default async function ManagerDashboardPage({
         {/* Ideas by Category Chart */}
         <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col">
           <h3 className="text-sm font-bold text-gray-900 mb-4">Ideas by Category</h3>
-          <div className="flex-1 flex items-end justify-between px-2 pt-4 relative">
+          <div className="flex-1 flex items-end justify-between px-2 pt-4 relative min-h-[200px]">
             {/* Y-axis labels and lines */}
             <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pr-2 pb-6 text-[10px] text-gray-400">
               <div className="flex items-center gap-2 w-full"><span className="w-3 text-right">{maxCategoryCount}</span><div className="flex-1 border-b border-gray-100 border-dashed"></div></div>
