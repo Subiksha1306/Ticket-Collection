@@ -165,19 +165,16 @@ export default async function ManagerDashboardPage({
           <p className="text-gray-500 mt-1">Ideas, impact and recognition at a glance.</p>
         </div>
         
-        <div className="flex items-center gap-3 flex-wrap">
+        {/* Month Picker and Actions */}
+        <div className="flex items-center gap-3">
           <ManagerMonthPicker />
           
-          <div className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 bg-white flex items-center gap-2 cursor-pointer shadow-sm">
-            <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-            All Teams
-            <svg className="w-4 h-4 text-gray-400 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-          </div>
+          {/* "All Teams" dropdown removed temporarily since Teams are not tracked in the database schema yet */}
           
-          <button className="px-4 py-2 bg-[#5B45FF] hover:bg-[#4a36d9] text-white rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm transition-colors">
+          <a href={`/api/export?month=${monthParam || `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`}`} className="px-4 py-2 bg-[#5B45FF] hover:bg-[#4a36d9] text-white rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm transition-colors">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
             Export Report
-          </button>
+          </a>
         </div>
       </div>
 
