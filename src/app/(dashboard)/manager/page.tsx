@@ -348,27 +348,27 @@ export default async function ManagerDashboardPage({
             
             {/* Bars */}
             <div className="relative z-10 w-full flex justify-between items-end pl-8 pb-6 h-full">
-              <div className="flex flex-col items-center gap-2 w-12 group cursor-pointer">
+              <div className="flex flex-col items-center justify-end gap-2 w-12 h-full group cursor-pointer">
                 <span className="text-xs font-bold text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity">{processImprovement}</span>
                 <div className="w-full bg-[#5B45FF] rounded-t-sm transition-all hover:bg-[#4a36d9]" style={{ height: `${(processImprovement / maxCategoryCount) * 100}%` }}></div>
                 <div className="absolute -bottom-2 text-[10px] text-center text-gray-500 leading-tight w-20">Process<br/>Improvement</div>
               </div>
-              <div className="flex flex-col items-center gap-2 w-12 group cursor-pointer">
+              <div className="flex flex-col items-center justify-end gap-2 w-12 h-full group cursor-pointer">
                 <span className="text-xs font-bold text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity">{automation}</span>
                 <div className="w-full bg-[#6C59FF] rounded-t-sm transition-all hover:bg-[#5B45FF]" style={{ height: `${(automation / maxCategoryCount) * 100}%` }}></div>
                 <div className="absolute -bottom-2 text-[10px] text-center text-gray-500 leading-tight w-20">Automation</div>
               </div>
-              <div className="flex flex-col items-center gap-2 w-12 group cursor-pointer">
+              <div className="flex flex-col items-center justify-end gap-2 w-12 h-full group cursor-pointer">
                 <span className="text-xs font-bold text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity">{customerExperience}</span>
                 <div className="w-full bg-[#7D6EFF] rounded-t-sm transition-all hover:bg-[#6C59FF]" style={{ height: `${(customerExperience / maxCategoryCount) * 100}%` }}></div>
                 <div className="absolute -bottom-2 text-[10px] text-center text-gray-500 leading-tight w-20">Customer<br/>Experience</div>
               </div>
-              <div className="flex flex-col items-center gap-2 w-12 group cursor-pointer">
+              <div className="flex flex-col items-center justify-end gap-2 w-12 h-full group cursor-pointer">
                 <span className="text-xs font-bold text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity">{costOptimization}</span>
                 <div className="w-full bg-[#8F82FF] rounded-t-sm transition-all hover:bg-[#7D6EFF]" style={{ height: `${(costOptimization / maxCategoryCount) * 100}%` }}></div>
                 <div className="absolute -bottom-2 text-[10px] text-center text-gray-500 leading-tight w-20">Cost<br/>Optimization</div>
               </div>
-              <div className="flex flex-col items-center gap-2 w-12 group cursor-pointer">
+              <div className="flex flex-col items-center justify-end gap-2 w-12 h-full group cursor-pointer">
                 <span className="text-xs font-bold text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity">{peopleCulture}</span>
                 <div className="w-full bg-[#A196FF] rounded-t-sm transition-all hover:bg-[#8F82FF]" style={{ height: `${(peopleCulture / maxCategoryCount) * 100}%` }}></div>
                 <div className="absolute -bottom-2 text-[10px] text-center text-gray-500 leading-tight w-20">People &<br/>Culture</div>
