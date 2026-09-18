@@ -21,41 +21,6 @@ export default async function AwardsPage() {
     }
   });
 
-  // Calculate leaderboard
-  const userTicketCounts = await prisma.submission.groupBy({
-    by: ['createdBy'],
-    where: {
-      createdAt: {
-        gte: startOfMonth
-      }
-    },
-    _count: {
-      id: true
-    },
-    orderBy: {
-      _count: {
-        id: 'desc'
-      }
-    }
-  });
-
-  const userIds = userTicketCounts.map(u => u.createdBy);
-  const users = await prisma.user.findMany({
-    where: { id: { in: userIds } },
-    select: { id: true, name: true, email: true }
-  });
-
-  const leaderboard = userTicketCounts.map(utc => {
-    const user = users.find(u => u.id === utc.createdBy);
-    return {
-      name: user?.name || user?.email || 'Unknown User',
-      count: utc._count.id
-    };
-  });
-
-  const winner = leaderboard[0] || null;
-  const runnerUp = leaderboard[1] || null;
-
   // Fetch Historical Hall of Fame
   const historicalHallOfFame = await prisma.hallOfFame.findMany({
     orderBy: [
@@ -69,7 +34,12 @@ export default async function AwardsPage() {
     return date.toLocaleString('default', { month: 'long' });
   };
 
-  const currentMonthDisplay = `${getMonthName(now.getMonth())} ${now.getFullYear()}`;
+  const mostRecentWinner = historicalHallOfFame[0];
+  const winnerName = mostRecentWinner?.winnerName || 'TBD';
+  const runnerUpName = mostRecentWinner?.runnerUpName || 'TBD';
+  const currentMonthDisplay = mostRecentWinner 
+    ? `${getMonthName(mostRecentWinner.month)} ${mostRecentWinner.year}`
+    : `${getMonthName(now.getMonth())} ${now.getFullYear()}`;
 
   return (
     <div className="space-y-8 pb-12 w-full max-w-7xl mx-auto">
@@ -165,7 +135,7 @@ export default async function AwardsPage() {
                   </div>
                 </div>
                 <div className="text-center sm:text-left flex-1">
-                  <h3 className="text-2xl font-bold text-gray-900 leading-tight mb-1">{winner ? winner.name : 'TBD'}</h3>
+                  <h3 className="text-2xl font-bold text-gray-900 leading-tight mb-1">{winnerName}</h3>
                   <p className="text-[#a57a1b] font-semibold mb-3">Innovator of the Month</p>
                   <p className="text-sm font-serif italic text-gray-600">
                     &ldquo;Leading with ideas, making an impact!&rdquo;
@@ -195,7 +165,7 @@ export default async function AwardsPage() {
                   </div>
                 </div>
                 <div className="text-center sm:text-left flex-1">
-                  <h3 className="text-2xl font-bold text-gray-900 leading-tight mb-1">{runnerUp ? runnerUp.name : 'TBD'}</h3>
+                  <h3 className="text-2xl font-bold text-gray-900 leading-tight mb-1">{runnerUpName}</h3>
                   <p className="text-[#6480a0] font-semibold mb-3">Outstanding Contribution</p>
                   <p className="text-sm font-serif italic text-gray-600">
                     &ldquo;Turning ideas into meaningful change!&rdquo;
