@@ -41,3 +41,18 @@ export async function POST(request: Request) {
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const session = await getSession();
+    if (!session?.user || !isAdmin(session.user.email)) {
+      return new NextResponse('Unauthorized', { status: 401 });
+    }
+    
+    await prisma.hallOfFame.deleteMany();
+    return new NextResponse('History Erased', { status: 200 });
+  } catch (error) {
+    console.error('Error erasing Hall of Fame:', error);
+    return new NextResponse('Internal Server Error', { status: 500 });
+  }
+}

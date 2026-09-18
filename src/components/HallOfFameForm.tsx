@@ -46,9 +46,26 @@ export default function HallOfFameForm() {
     }
   };
 
+  const handleClear = async () => {
+    if (!confirm('Are you sure you want to completely erase the Hall of Fame history? This cannot be undone.')) return;
+    try {
+      const res = await fetch('/api/hall-of-fame', { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete');
+      router.refresh();
+      alert('Hall of Fame history erased successfully!');
+    } catch (error) {
+      alert('Failed to erase history.');
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Add / Edit Hall of Fame Entry</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">Add / Edit Hall of Fame Entry</h3>
+        <button onClick={handleClear} className="text-xs font-semibold text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded transition-colors">
+          Clear History
+        </button>
+      </div>
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Month</label>
