@@ -35,28 +35,7 @@ export default async function ManagerDashboardPage({
     endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
   }
 
-  // Real Database Queries for the selected month
-  const totalSubmissions = await prisma.submission.count({
-    where: {
-      createdAt: {
-        gte: startOfMonth,
-        lte: endOfMonth
-      }
-    }
-  });
 
-  const uniqueUsers = await prisma.submission.groupBy({
-    by: ['createdBy'],
-    where: {
-      createdAt: {
-        gte: startOfMonth,
-        lte: endOfMonth
-      }
-    }
-  });
-  const participantsCount = uniqueUsers.length;
-
-  // Pipeline Counts
   const pipelineData = await prisma.submission.groupBy({
     by: ['status'],
     where: {
@@ -80,8 +59,7 @@ export default async function ManagerDashboardPage({
   const countImplemented = getStatusCount('Implemented');
   const countImpactVerified = getStatusCount('Impact Verified');
 
-  // Total Pending Review (for the stat card)
-  const pendingReviewCount = countUnderReview;
+
 
   // Categories Count
   const categoryData = await prisma.submission.groupBy({
@@ -128,30 +106,6 @@ export default async function ManagerDashboardPage({
     orderBy: { createdAt: 'desc' }
   });
 
-
-  // Get Top Scored Submissions
-  const topSubmissions = await prisma.submission.findMany({
-    where: {
-      createdAt: {
-        gte: startOfMonth,
-        lte: endOfMonth
-      },
-      score: { not: null }
-    },
-    orderBy: { score: 'desc' },
-    take: 2,
-    include: {
-      author: true,
-      versions: {
-        where: { isActive: true },
-        take: 1
-      }
-    }
-  });
-
-  const winner = topSubmissions[0];
-  const runnerUp = topSubmissions[1];
-
   // Helper for max value in chart
   const maxCategoryCount = Math.max(10, processImprovement, automation, customerExperience, costOptimization, peopleCulture);
 
@@ -178,91 +132,7 @@ export default async function ManagerDashboardPage({
         </div>
       </div>
 
-      {/* 4 Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] flex items-center gap-5">
-          <div className="w-14 h-14 rounded-full bg-[#f3f0ff] flex items-center justify-center text-[#5B45FF] flex-shrink-0">
-            <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-          </div>
-          <div>
-            <div className="text-3xl font-bold text-gray-900 leading-tight">{totalSubmissions}</div>
-            <div className="text-sm font-medium text-gray-500">Submissions</div>
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] flex items-center gap-5">
-          <div className="w-14 h-14 rounded-full bg-[#e6f9f0] flex items-center justify-center text-[#0ca678] flex-shrink-0">
-            <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          </div>
-          <div>
-            <div className="text-3xl font-bold text-gray-900 leading-tight">{countImplemented}</div>
-            <div className="text-sm font-medium text-gray-500">Implemented</div>
-          </div>
-        </div>
 
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] flex items-center gap-5">
-          <div className="w-14 h-14 rounded-full bg-[#fff4e6] flex items-center justify-center text-[#f59f00] flex-shrink-0">
-            <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          </div>
-          <div>
-            <div className="text-3xl font-bold text-gray-900 leading-tight">{pendingReviewCount}</div>
-            <div className="text-sm font-medium text-gray-500">Pending Review</div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] flex items-center gap-5">
-          <div className="w-14 h-14 rounded-full bg-[#e7f5ff] flex items-center justify-center text-[#339af0] flex-shrink-0">
-            <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-          </div>
-          <div>
-            <div className="text-3xl font-bold text-gray-900 leading-tight">{participantsCount}</div>
-            <div className="text-sm font-medium text-gray-500">Participants</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Winner Cards Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* Winner Card */}
-        <div className="bg-[#fcfbff] rounded-2xl p-6 border border-[#e8e4ff] shadow-sm flex items-center justify-between">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-[#f0ecff] flex items-center justify-center text-[#5B45FF] flex-shrink-0 mt-1">
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H7v2h10v-2h-4v-3.1a5.01 5.01 0 003.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM7 10.82C5.84 10.4 5 9.3 5 8V7h2v3.82zM19 8c0 1.3-.84 2.4-2 2.82V7h2v1z" /></svg>
-            </div>
-            <div>
-              <div className="text-sm font-bold text-[#5B45FF] mb-1">Top Score</div>
-              <h3 className="text-lg font-bold text-gray-900 leading-tight">{winner ? winner.author.name : 'TBD'}</h3>
-              <div className="text-sm text-gray-500 mt-1">Ticket {winner ? winner.ticketNumber : '#'}</div>
-            </div>
-          </div>
-          <div className="text-right border-l border-gray-200 pl-6 py-1">
-            <div className="text-xl font-bold text-[#5B45FF]">{winner ? `${winner.score}/100` : '-'}</div>
-            <div className="w-full h-px bg-gray-200 my-2"></div>
-            <div className="text-xl font-bold text-[#5B45FF]">₹3,000</div>
-          </div>
-        </div>
-
-        {/* Runner-up Card */}
-        <div className="bg-[#fafafa] rounded-2xl p-6 border border-gray-200 shadow-sm flex items-center justify-between">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 flex-shrink-0 mt-1">
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H7v2h10v-2h-4v-3.1a5.01 5.01 0 003.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM7 10.82C5.84 10.4 5 9.3 5 8V7h2v3.82zM19 8c0 1.3-.84 2.4-2 2.82V7h2v1z" /></svg>
-            </div>
-            <div>
-              <div className="text-sm font-bold text-gray-500 mb-1">Runner-up</div>
-              <h3 className="text-lg font-bold text-gray-900 leading-tight">{runnerUp ? runnerUp.author.name : 'TBD'}</h3>
-              <div className="text-sm text-gray-500 mt-1">Ticket {runnerUp ? runnerUp.ticketNumber : '#'}</div>
-            </div>
-          </div>
-          <div className="text-right border-l border-gray-200 pl-6 py-1">
-            <div className="text-xl font-bold text-gray-600">{runnerUp ? `${runnerUp.score}/100` : '-'}</div>
-            <div className="w-full h-px bg-gray-200 my-2"></div>
-            <div className="text-xl font-bold text-gray-600">₹2,000</div>
-          </div>
-        </div>
-
-      </div>
 
       {/* Middle Section (Pipeline & Category) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
