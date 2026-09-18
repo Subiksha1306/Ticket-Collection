@@ -29,8 +29,8 @@ export default async function AwardsPage() {
     ]
   });
 
-  const getMonthName = (monthIndex: number) => {
-    const date = new Date(2000, monthIndex, 1);
+  const getMonthName = (monthNum: number) => {
+    const date = new Date(2000, monthNum - 1, 1);
     return date.toLocaleString('default', { month: 'long' });
   };
 
@@ -39,7 +39,7 @@ export default async function AwardsPage() {
   const runnerUpName = mostRecentWinner?.runnerUpName || 'TBD';
   const currentMonthDisplay = mostRecentWinner 
     ? `${getMonthName(mostRecentWinner.month)} ${mostRecentWinner.year}`
-    : `${getMonthName(now.getMonth())} ${now.getFullYear()}`;
+    : `${getMonthName(now.getMonth() + 1)} ${now.getFullYear()}`;
 
   return (
     <div className="space-y-8 pb-12 w-full max-w-7xl mx-auto">
