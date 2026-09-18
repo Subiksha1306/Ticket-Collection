@@ -1,5 +1,6 @@
 import { getSession, isAdmin } from '@/lib/auth';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import ManagerMonthPicker from '@/components/ManagerMonthPicker';
 import { prisma } from '@/lib/db';
 
@@ -285,7 +286,7 @@ export default async function ManagerDashboardPage({
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{submission.score ? `${submission.score}/100` : 'Unscored'}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <button className="px-4 py-1.5 border border-[#5B45FF] text-[#5B45FF] rounded text-xs font-semibold hover:bg-[#f3f0ff] transition-colors">Review</button>
+                      <Link href={`/submissions/${submission.id}`} className="px-4 py-1.5 border border-[#5B45FF] text-[#5B45FF] rounded text-xs font-semibold hover:bg-[#f3f0ff] transition-colors inline-block">Review</Link>
                     </td>
                   </tr>
                 ))
