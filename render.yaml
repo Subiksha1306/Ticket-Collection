@@ -1,0 +1,14 @@
+services:
+  # ── Unified Dynamic Web Service ──────────────────────────────────────────
+  - type: web
+    name: ticket-collection-ci
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm run build
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: NODE_ENV
+        value: development
