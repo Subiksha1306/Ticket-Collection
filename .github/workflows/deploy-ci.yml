@@ -1,0 +1,191 @@
+name: Deploy demo-ci to Render — CI
+
+# ── Secret / variable configuration guide ─────────────────────────────────────
+# Environment secrets  (Settings → Environments → <name> → Secrets & Variables)
+#   RENDER_API_KEY      — Render account or user API key (rnd_...)
+#   RENDER_SERVICE_ID   — Render Web Service ID (srv-...) for this environment
+#
+# (RENDER_API_KEY can also be configured as a Repository Secret)
+# ──────────────────────────────────────────────────────────────────────────────
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch or tag to deploy (defaults to main)'
+        required: false
+        default: 'main'
+
+jobs:
+  deploy:
+    name: Trigger Render Deploy — CI
+    runs-on: ubuntu-latest
+    environment: ci
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.ref || github.ref }}
+
+      - name: Auto-detect & patch start + build commands
+        run: |
+          # Detect monorepo vs single-root and generate commands that work from the repo root.
+          # Uses `npm --prefix <dir>` for monorepos so no Render rootDir config is needed.
+          # This permanently prevents "Cannot find module" crashes.
+          START_CMD=""
+          BUILD_CMD="npm install"
+
+          # Check if root package.json has a real server start script (not a monorepo delegate)
+          if [ -f package.json ]; then
+            ROOT_START=$(node -e "
+              try {
+                const p = require('./package.json');
+                const s = p.scripts || {};
+                const sv = Object.values(s).join(' ');
+                // Monorepo root: no start/serve OR start delegates via --prefix
+                const isMonoRoot = (!s.start && !s.serve) || /--prefix/.test(sv) || (!p.dependencies && (sv.includes('playwright') || sv.includes('jest') || sv.includes('vitest')));
+                if (!isMonoRoot) {
+                  if (s.start) console.log('npm start');
+                  else if (s.serve) console.log('npm run serve');
+                  else if (s.dev) console.log('npm run dev');
+                  else if (p.main) console.log('node ' + p.main);
+                }
+              } catch(e) {}
+            " 2>/dev/null || true)
+            if [ -n "$ROOT_START" ]; then
+              START_CMD="$ROOT_START"
+              ROOT_BUILD=$(node -e "try{const p=require('./package.json');if(p.scripts&&p.scripts.build)console.log('npm run build');}catch(e){}" 2>/dev/null || true)
+              BUILD_CMD="${ROOT_BUILD:-npm install}"
+            fi
+          fi
+
+          # If root has no real start, check common monorepo subdirectories
+          if [ -z "$START_CMD" ]; then
+            for dir in server backend api src; do
+              if [ -f "$dir/package.json" ]; then
+                SUBDIR_START=$(node -e "
+                  try {
+                    const p = require('./$dir/package.json');
+                    const s = p.scripts || {};
+                    if (s.start) console.log('npm start --prefix $dir');
+                    else if (s.dev) console.log('npm run dev --prefix $dir');
+                    else if (s.serve) console.log('npm run serve --prefix $dir');
+                    else if (p.main) console.log('node $dir/' + p.main);
+                  } catch(e) {}
+                " 2>/dev/null || true)
+                if [ -n "$SUBDIR_START" ]; then
+                  START_CMD="$SUBDIR_START"
+                  HAS_BUILD=$(node -e "try{const p=require('./$dir/package.json');if(p.scripts&&p.scripts.build)console.log('yes');}catch(e){}" 2>/dev/null || true)
+                  if [ "$HAS_BUILD" = "yes" ]; then
+                    BUILD_CMD="npm install --prefix $dir && npm run build --prefix $dir"
+                  else
+                    BUILD_CMD="npm install --prefix $dir"
+                  fi
+                  break
+                fi
+              fi
+            done
+          fi
+
+          # Last resort: probe for JS entry files in root (single-root repo without start script)
+          if [ -z "$START_CMD" ]; then
+            for f in src/index.js index.js app.js main.js server.js; do
+              if [ -f "$f" ]; then START_CMD="node $f"; break; fi
+            done
+          fi
+
+          echo "Detected start command : ${START_CMD:-<none>}"
+          echo "Detected build command : $BUILD_CMD"
+
+          if [ -n "$START_CMD" ]; then
+            # Export before node. Trailing NAME=value args are not environment variables,
+            # so process.env.START_CMD would be undefined and the patch would clear commands.
+            export START_CMD BUILD_CMD
+            PATCH_BODY=$(node -e "
+              const body = {
+                serviceDetails: {
+                  buildCommand: process.env.BUILD_CMD,
+                  startCommand: process.env.START_CMD,
+                  envSpecificDetails: {
+                    buildCommand: process.env.BUILD_CMD,
+                    startCommand: process.env.START_CMD
+                  }
+                }
+              };
+              if (!body.serviceDetails.startCommand || !body.serviceDetails.buildCommand) {
+                console.error('start or build command missing from patch body');
+                process.exit(1);
+              }
+              console.log(JSON.stringify(body));
+            ")
+
+            TARGET_SERVICE_ID="${{ secrets.RENDER_WEB_SERVICE_ID || secrets.RENDER_SERVICE_ID }}"
+            if [ -n "$TARGET_SERVICE_ID" ]; then
+              PATCH_RESP=$(curl -s -o /dev/null -w "%{http_code}" -X PATCH \
+                "https://api.render.com/v1/services/$TARGET_SERVICE_ID" \
+                -H "Accept: application/json" \
+                -H "Content-Type: application/json" \
+                -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+                -d "$PATCH_BODY")
+              if [ "$PATCH_RESP" -ge 200 ] && [ "$PATCH_RESP" -lt 300 ]; then
+                echo "✅ Render service patched — start: $START_CMD | build: $BUILD_CMD"
+              else
+                echo "⚠️ Patch returned HTTP $PATCH_RESP — deploying with current Render settings"
+              fi
+            fi
+          else
+            echo "⚠️ Could not detect start command — deploying with current Render settings"
+          fi
+
+      - name: Trigger Render Deploy
+        run: |
+          PRIMARY_ID="${{ secrets.RENDER_WEB_SERVICE_ID || secrets.RENDER_SERVICE_ID }}"
+          STATIC_ID="${{ secrets.RENDER_STATIC_SERVICE_ID }}"
+
+          if [ -z "$PRIMARY_ID" ] && [ -z "$STATIC_ID" ]; then
+            echo "❌ Neither RENDER_SERVICE_ID nor RENDER_STATIC_SERVICE_ID is configured!"
+            exit 1
+          fi
+
+          if [ -n "$PRIMARY_ID" ]; then
+            echo "Triggering deploy for primary Render Web Service $PRIMARY_ID..."
+            resp1=$(curl -s -w "\n%{http_code}" -X POST \
+              "https://api.render.com/v1/services/$PRIMARY_ID/deploys" \
+              -H "Accept: application/json" \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+              -d '{}')
+            code1=$(echo "$resp1" | tail -n1)
+            body1=$(echo "$resp1" | sed '$d')
+            echo "Render API Response HTTP Code: $code1"
+            echo "Response Body: $body1"
+            if [ "$code1" -ge 200 ] && [ "$code1" -lt 300 ]; then
+              echo "✅ Primary Render deployment initiated successfully!"
+            else
+              echo "❌ Primary Render deployment failed with HTTP $code1"
+              exit 1
+            fi
+          fi
+
+          if [ -n "$STATIC_ID" ]; then
+            echo "Triggering deploy for companion Render Static Site $STATIC_ID..."
+            resp2=$(curl -s -w "\n%{http_code}" -X POST \
+              "https://api.render.com/v1/services/$STATIC_ID/deploys" \
+              -H "Accept: application/json" \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+              -d '{}')
+            code2=$(echo "$resp2" | tail -n1)
+            body2=$(echo "$resp2" | sed '$d')
+            echo "Render Static Site Response HTTP Code: $code2"
+            echo "Response Body: $body2"
+            if [ "$code2" -ge 200 ] && [ "$code2" -lt 300 ]; then
+              echo "✅ Static Site deployment initiated successfully!"
+            else
+              echo "❌ Static Site deployment failed with HTTP $code2"
+              exit 1
+            fi
+          fi
