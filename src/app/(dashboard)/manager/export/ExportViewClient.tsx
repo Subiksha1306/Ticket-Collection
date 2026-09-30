@@ -18,6 +18,7 @@ type ExportSubmission = {
   status: string;
   score: number | null;
   category: string | null;
+  updatedAt: string;
   versions: ExportVersion[];
 };
 
@@ -123,7 +124,7 @@ export default function ExportViewClient() {
           user.name || user.email || 'Unknown',
           currentVersion ? `v${currentVersion.versionNumber}` : 'v1',
           currentVersion?.isDraft ? 'Yes' : 'No',
-          currentVersion?.createdAt ? new Date(currentVersion.createdAt).toISOString() : ''
+          sub.updatedAt ? new Date(sub.updatedAt).toISOString() : ''
         ];
         csv += row.map(escapeCsv).join(',') + '\n';
       });
@@ -237,7 +238,7 @@ export default function ExportViewClient() {
                               {currentVersion?.title || 'No Title'}
                             </h4>
                             <div className="text-xs text-gray-500 flex items-center gap-4">
-                              <span>Updated: {currentVersion?.createdAt ? new Date(currentVersion.createdAt).toLocaleDateString() : 'N/A'}</span>
+                              <span>Updated: {sub.updatedAt ? new Date(sub.updatedAt).toLocaleDateString() : 'N/A'}</span>
                               <span>Score: {sub.score !== null ? sub.score : '-'}</span>
                               <span>Category: {sub.category || '-'}</span>
                             </div>
