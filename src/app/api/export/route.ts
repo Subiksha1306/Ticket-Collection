@@ -12,25 +12,32 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const monthParam = searchParams.get('month'); // Format: YYYY-MM
+    const allParam = searchParams.get('all'); // true
 
-    if (!monthParam) {
-      return new NextResponse('Month parameter is required (YYYY-MM)', { status: 400 });
-    }
+    let whereClause = {};
+    let filename = 'impactx-export-all.csv';
 
-    const [yearStr, monthStr] = monthParam.split('-');
-    const year = parseInt(yearStr);
-    const month = parseInt(monthStr) - 1; // 0-indexed for Date
+    if (!allParam) {
+      if (!monthParam) {
+        return new NextResponse('Month parameter is required (YYYY-MM)', { status: 400 });
+      }
+      const [yearStr, monthStr] = monthParam.split('-');
+      const year = parseInt(yearStr);
+      const month = parseInt(monthStr) - 1; // 0-indexed for Date
 
-    const startDate = new Date(year, month, 1);
-    const endDate = new Date(year, month + 1, 0, 23, 59, 59, 999);
-
-    const submissions = await prisma.submission.findMany({
-      where: {
+      const startDate = new Date(year, month, 1);
+      const endDate = new Date(year, month + 1, 0, 23, 59, 59, 999);
+      whereClause = {
         createdAt: {
           gte: startDate,
           lte: endDate
         }
-      },
+      };
+      filename = `impactx-export-${monthParam}.csv`;
+    }
+
+    const submissions = await prisma.submission.findMany({
+      where: whereClause,
       include: {
         author: true,
         versions: {
@@ -64,7 +71,7 @@ export async function GET(request: Request) {
       return new NextResponse(emptyCsv, {
         headers: {
           'Content-Type': 'text/csv',
-          'Content-Disposition': `attachment; filename="impactx-export-${monthParam}.csv"`,
+          'Content-Disposition': `attachment; filename="${filename}"`,
         }
       });
     }
@@ -74,7 +81,7 @@ export async function GET(request: Request) {
     return new NextResponse(csvString, {
       headers: {
         'Content-Type': 'text/csv',
-        'Content-Disposition': `attachment; filename="impactx-export-${monthParam}.csv"`,
+        'Content-Disposition': `attachment; filename="${filename}"`,
       }
     });
 
