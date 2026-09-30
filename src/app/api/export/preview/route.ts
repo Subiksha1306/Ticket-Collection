@@ -25,7 +25,7 @@ export async function GET(request: Request) {
 
     const submissions = await prisma.submission.findMany({
       where: {
-        createdAt: {
+        updatedAt: {
           gte: startDate,
           lte: endDate
         }
