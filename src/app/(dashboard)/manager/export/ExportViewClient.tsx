@@ -115,7 +115,7 @@ export default function ExportViewClient() {
         ...user,
         submissions: selectedSubs
       };
-    }).filter(Boolean);
+    }).filter((user): user is NonNullable<typeof user> => Boolean(user));
 
     const htmlContent = `<!DOCTYPE html>
 <html lang="en">
@@ -253,7 +253,7 @@ export default function ExportViewClient() {
             className="input-field max-w-[200px]"
           />
         </div>
-                <div class="flex items-center gap-2">
+                <div className="flex items-center gap-2">
           <button 
             onClick={handleExportHtml}
             disabled={selectedSubmissions.size === 0 || loading}
