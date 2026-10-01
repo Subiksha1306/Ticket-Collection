@@ -54,7 +54,7 @@ export async function GET(request: Request) {
         'Ticket Number': sub.ticketNumber,
         'Status': sub.status,
         'Category': sub.category || 'N/A',
-        'Score': sub.score !== null ? sub.score : 'Unscored',
+        
         'Title': currentVersion?.title || 'Unknown',
         'Description': currentVersion?.description || 'N/A',
         'Created By': sub.author?.name || sub.author?.email || 'Unknown',
@@ -69,7 +69,7 @@ export async function GET(request: Request) {
       // Return empty CSV with just headers
       const emptyCsv = stringify([], {
         header: true,
-        columns: ['Ticket Number', 'Status', 'Category', 'Score', 'Title', 'Description', 'Created By', 'Version', 'Is Draft', 'Created At', 'Last Updated']
+        columns: ['Ticket Number', 'Status', 'Category', 'Title', 'Description', 'Created By', 'Version', 'Is Draft', 'Created At', 'Last Updated']
       });
       return new NextResponse(emptyCsv, {
         headers: {

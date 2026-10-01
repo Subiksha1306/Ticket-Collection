@@ -265,7 +265,7 @@ export default async function ManagerDashboardPage({
                 <th scope="col" className="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Title</th>
                 <th scope="col" className="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Employee</th>
                 <th scope="col" className="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                <th scope="col" className="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Score</th>
+                
                 <th scope="col" className="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Action</th>
               </tr>
             </thead>
@@ -288,7 +288,7 @@ export default async function ManagerDashboardPage({
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span className="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-[#fff4e6] text-[#e88d14]">{submission.status}</span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{submission.score ? `${submission.score}/100` : 'Unscored'}</td>
+                    
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <Link href={`/submissions/${submission.id}`} className="px-4 py-1.5 border border-[#5B45FF] text-[#5B45FF] rounded text-xs font-semibold hover:bg-[#f3f0ff] transition-colors inline-block">Review</Link>
                     </td>

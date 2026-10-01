@@ -57,7 +57,7 @@ export async function GET(request: Request) {
         id: sub.id,
         ticketNumber: sub.ticketNumber,
         status: sub.status,
-        score: sub.score,
+        
         category: sub.category,
         updatedAt: sub.updatedAt,
         versions: sub.versions.map(v => ({

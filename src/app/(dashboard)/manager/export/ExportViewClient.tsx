@@ -16,7 +16,7 @@ type ExportSubmission = {
   id: string;
   ticketNumber: string;
   status: string;
-  score: number | null;
+  
   category: string | null;
   updatedAt: string;
   versions: ExportVersion[];
@@ -170,7 +170,7 @@ export default function ExportViewClient() {
                                         <h4 class="text-base font-medium text-gray-800">${currentVersion?.title || 'No Title'}</h4>
                                     </div>
                                     <div class="text-right">
-                                        <div class="text-sm font-medium text-gray-900">Score: ${sub.score !== null ? sub.score : '-'}</div>
+                                        
                                         <div class="text-xs text-gray-500 mt-1">${sub.category || 'Uncategorized'}</div>
                                     </div>
                                 </div>
@@ -200,7 +200,7 @@ export default function ExportViewClient() {
   };
 
   const handleExport = () => {
-    const headers = ['Ticket Number', 'Status', 'Category', 'Score', 'Title', 'Description', 'Created By', 'Version', 'Is Draft', 'Created At'];
+    const headers = ['Ticket Number', 'Status', 'Category', 'Title', 'Description', 'Created By', 'Version', 'Is Draft', 'Created At'];
     let csv = headers.map(escapeCsv).join(',') + '\n';
 
     data.forEach(user => {
@@ -212,7 +212,7 @@ export default function ExportViewClient() {
           sub.ticketNumber,
           sub.status,
           sub.category || 'N/A',
-          sub.score !== null ? sub.score : 'Unscored',
+          
           currentVersion?.title || 'Unknown',
           currentVersion?.description || 'N/A',
           user.name || user.email || 'Unknown',
@@ -344,7 +344,7 @@ export default function ExportViewClient() {
                             </h4>
                             <div className="text-xs text-gray-500 flex items-center gap-4">
                               <span>Updated: {sub.updatedAt ? new Date(sub.updatedAt).toLocaleDateString() : 'N/A'}</span>
-                              <span>Score: {sub.score !== null ? sub.score : '-'}</span>
+                              
                               <span>Category: {sub.category || '-'}</span>
                             </div>
                           </div>
