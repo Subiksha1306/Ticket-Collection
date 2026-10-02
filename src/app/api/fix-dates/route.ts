@@ -3,24 +3,32 @@ import { prisma } from '@/lib/db';
 
 export async function GET() {
   try {
-    const submissions = await prisma.submission.findMany({
-      select: { id: true, createdAt: true }
-    });
-
-    let updatedCount = 0;
-    for (const sub of submissions) {
-      await prisma.submission.update({
-        where: { id: sub.id },
-        data: {
-          updatedAt: sub.createdAt // Manually overriding Prisma's @updatedAt
-        }
-      });
-      updatedCount++;
+    // 1. Get all table names to see exactly how they are stored in the database
+    const tables: any[] = await prisma.$queryRawUnsafe(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema='public'
+    `);
+    
+    const tableNames = tables.map(t => t.table_name);
+    
+    // Find the submission table regardless of case
+    const submissionTable = tableNames.find(t => t.toLowerCase() === 'submission');
+    
+    if (!submissionTable) {
+      return NextResponse.json({ success: false, tables: tableNames, error: 'Could not find any table named submission' });
     }
+
+    // 2. Execute raw SQL using the EXACT table name we found
+    await prisma.$executeRawUnsafe(`
+      UPDATE "${submissionTable}"
+      SET updated_at = created_at
+    `);
     
     return NextResponse.json({ 
       success: true, 
-      message: `Successfully restored updatedAt to match createdAt for ${updatedCount} submissions using safe Prisma methods.` 
+      tableUsed: submissionTable,
+      message: 'Successfully restored updatedAt to match createdAt for all submissions.' 
     });
   } catch (error: any) {
     console.error('Error fixing dates:', error);
