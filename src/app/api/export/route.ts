@@ -120,7 +120,7 @@ export async function GET(request: Request) {
                                         <span class="px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700">${currentVersion ? 'v' + currentVersion.versionNumber : 'v1'}</span>
                                     </div>
                                 </div>
-                                <p class="text-sm text-gray-600 mt-3 whitespace-pre-wrap">${currentVersion?.description || 'No description provided.'}</p>
+                                
                                 <div class="mt-4 text-xs text-gray-400 flex items-center gap-4">
                                     <span>Created At: ${new Date(sub.createdAt).toLocaleDateString()}</span>
                                 </div>
