@@ -3,15 +3,25 @@ import { prisma } from '@/lib/db';
 
 export async function GET() {
   try {
-    // Try uppercase first, if it fails try lowercase
-    try {
-      await prisma.$executeRawUnsafe(`UPDATE submission SET updated_at = created_at`);
-    } catch (e: any) {
-      console.log('Lowercase failed, trying quoted public schema...');
-      await prisma.$executeRawUnsafe(`UPDATE public."Submission" SET updated_at = created_at`);
+    const submissions = await prisma.submission.findMany({
+      select: { id: true, createdAt: true }
+    });
+
+    let updatedCount = 0;
+    for (const sub of submissions) {
+      await prisma.submission.update({
+        where: { id: sub.id },
+        data: {
+          updatedAt: sub.createdAt // Manually overriding Prisma's @updatedAt
+        }
+      });
+      updatedCount++;
     }
     
-    return NextResponse.json({ success: true, message: 'Successfully restored updatedAt to match createdAt for all submissions.' });
+    return NextResponse.json({ 
+      success: true, 
+      message: `Successfully restored updatedAt to match createdAt for ${updatedCount} submissions using safe Prisma methods.` 
+    });
   } catch (error: any) {
     console.error('Error fixing dates:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
