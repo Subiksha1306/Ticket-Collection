@@ -99,11 +99,7 @@ export default function ExportViewClient() {
     setSelectedSubmissions(newSet);
   };
 
-  const escapeCsv = (val: any) => {
-    if (val === null || val === undefined) return '""';
-    const str = String(val).replace(/"/g, '""');
-    return `"${str}"`;
-  };
+  
 
   
   const handleExportHtml = () => {
@@ -199,41 +195,6 @@ export default function ExportViewClient() {
     document.body.removeChild(link);
   };
 
-  const handleExport = () => {
-    const headers = ['Ticket Number', 'Status', 'Category', 'Title', 'Description', 'Created By', 'Version', 'Is Draft', 'Created At'];
-    let csv = headers.map(escapeCsv).join(',') + '\n';
-
-    data.forEach(user => {
-      user.submissions.forEach(sub => {
-        if (!selectedSubmissions.has(sub.id)) return;
-        
-        const currentVersion = sub.versions[0];
-        const row = [
-          sub.ticketNumber,
-          sub.status,
-          sub.category || 'N/A',
-          
-          currentVersion?.title || 'Unknown',
-          currentVersion?.description || 'N/A',
-          user.name || user.email || 'Unknown',
-          currentVersion ? `v${currentVersion.versionNumber}` : 'v1',
-          currentVersion?.isDraft ? 'Yes' : 'No',
-          sub.updatedAt ? new Date(sub.updatedAt).toISOString() : ''
-        ];
-        csv += row.map(escapeCsv).join(',') + '\n';
-      });
-    });
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `impactx-export-${month}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   return (
     <div className="space-y-6 pb-12 w-full max-w-5xl mx-auto">
       <div className="flex items-center gap-4 mb-2">
@@ -263,14 +224,7 @@ export default function ExportViewClient() {
             Export HTML Document
           </button>
           
-          <button 
-            onClick={handleExport}
-            disabled={selectedSubmissions.size === 0 || loading}
-            className="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-            Export CSV
-          </button>
+          
         </div>
       </div>
 
