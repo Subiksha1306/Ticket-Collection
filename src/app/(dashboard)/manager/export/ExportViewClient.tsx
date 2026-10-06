@@ -170,7 +170,7 @@ export default function ExportViewClient() {
                                         <div class="text-xs text-gray-500 mt-1">${sub.category || 'Uncategorized'}</div>
                                     </div>
                                 </div>
-                                <p class="text-sm text-gray-600 mt-3 whitespace-pre-wrap">${currentVersion?.description || 'No description provided.'}</p>
+                                
                                 <div class="mt-4 text-xs text-gray-400 flex items-center gap-4">
                                     <span>Last Updated: ${sub.updatedAt ? new Date(sub.updatedAt).toLocaleDateString() : 'N/A'}</span>
                                     <span>Is Draft: ${currentVersion?.isDraft ? 'Yes' : 'No'}</span>
