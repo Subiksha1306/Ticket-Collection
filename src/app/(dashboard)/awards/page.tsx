@@ -210,15 +210,14 @@ export default async function AwardsPage() {
             <thead className="bg-[#f9fafb]">
               <tr>
                 <th scope="col" className="px-8 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider w-1/5">Month</th>
-                <th scope="col" className="px-8 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider w-1/4">Winner</th>
-                <th scope="col" className="px-8 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider w-1/4">Runner-up</th>
-                <th scope="col" className="px-8 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider w-[30%]">Highlights</th>
+                <th scope="col" className="px-8 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider w-2/5">Winner</th>
+                <th scope="col" className="px-8 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider w-2/5">Runner-up</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
               {historicalHallOfFame.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-8 py-10 text-center text-gray-500">
+                  <td colSpan={3} className="px-8 py-10 text-center text-gray-500">
                     No past winners have been recorded yet.
                   </td>
                 </tr>
@@ -238,9 +237,7 @@ export default async function AwardsPage() {
                         <span className="text-gray-400">🥈</span> {entry.runnerUpName}
                       </div>
                     </td>
-                    <td className="px-8 py-4 text-sm text-gray-500">
-                      Innovative idea to improve process efficiency and create value.
-                    </td>
+                    
                   </tr>
                 ))
               )}
