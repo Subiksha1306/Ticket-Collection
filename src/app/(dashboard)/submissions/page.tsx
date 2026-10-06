@@ -19,7 +19,9 @@ export default async function MySubmissionsPage(props: {
   if (q) {
     whereClause.OR = [
       { ticketNumber: { contains: q, mode: 'insensitive' } },
-      { versions: { some: { title: { contains: q, mode: 'insensitive' } } } }
+      { versions: { some: { title: { contains: q, mode: 'insensitive' } } } },
+      { author: { name: { contains: q, mode: 'insensitive' } } },
+      { author: { email: { contains: q, mode: 'insensitive' } } }
     ];
   }
 

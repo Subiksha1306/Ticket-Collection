@@ -14,7 +14,7 @@ export default function Topbar() {
             type="text"
             name="q"
             className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] sm:text-sm transition-shadow"
-            placeholder="Search by ticket or title..."
+            placeholder="Search by ticket, title, or person..."
           />
         </form>
       </div>
