@@ -9,7 +9,7 @@ export default function WinnersBanner({ text }: { text: string }) {
   const cleanText = text.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|\u{2B50}|\u{1F3C6}|\u{1F947}|\u{1F948}|\u{1F389}/gu, '').trim();
   
   // Parse out the structure assuming the common pattern used by the admin
-  const regex = /^(?:(.*?(?:!|:))\s*)?(.*?)\s*Winner:\s*(.*?)(?:,\s*Runner-up:\s*(.*))?$/i;
+  const regex = /^(?:(.*?(?:!|:))\s*)?(.*?)\s*Winner:\s*([\s\S]*?)(?:,?\s*Runner-up:\s*(.*)|$)/i;
   const match = cleanText.match(regex);
 
   let leadIn = "Congratulations to our ImpactX winners!";
