@@ -1,7 +1,6 @@
 import { getSession, isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import Link from 'next/link';
-import SearchInput from '@/components/SearchInput';
 
 export default async function MySubmissionsPage(props: {
   searchParams?: Promise<{ q?: string }> | { q?: string };
@@ -56,19 +55,6 @@ export default async function MySubmissionsPage(props: {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-white">
-          <div className="relative max-w-xs w-full">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-            <div className="w-full">
-              <SearchInput initialValue={q} />
-            </div>
-          </div>
-        </div>
-
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
