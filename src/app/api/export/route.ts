@@ -34,7 +34,7 @@ export async function GET(request: Request) {
         }
       };
       filename = `impactx-export-${monthParam}.html`;
-      displayMonth = monthParam;
+      displayMonth = new Date(year, month, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     }
 
     const submissions = await prisma.submission.findMany({
@@ -87,7 +87,7 @@ export async function GET(request: Request) {
             </div>
             <div class="text-right">
                 <p class="text-sm text-gray-500">Generated on ${new Date().toLocaleDateString()}</p>
-                <button onclick="window.print()" class="mt-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 shadow-sm transition-colors">Print / Save PDF</button>
+                
             </div>
         </div>
 

@@ -113,12 +113,18 @@ export default function ExportViewClient() {
       };
     }).filter((user): user is NonNullable<typeof user> => Boolean(user));
 
+        let displayMonth = month;
+    if (month && month.includes('-')) {
+      const [yearStr, monthStr] = month.split('-');
+      const d = new Date(parseInt(yearStr), parseInt(monthStr) - 1, 1);
+      displayMonth = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    }
     const htmlContent = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ImpactX Export - ${month}</title>
+    <title>ImpactX Export - ${displayMonth}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #f9fafb; font-family: system-ui, -apple-system, sans-serif; }
@@ -131,11 +137,11 @@ export default function ExportViewClient() {
         <div class="flex items-center justify-between mb-8">
             <div>
                 <h1 class="text-3xl font-bold text-gray-900">ImpactX Export Report</h1>
-                <p class="text-gray-500 mt-1">Data for: <span class="font-semibold text-gray-700">${month}</span></p>
+                <p class="text-gray-500 mt-1">Data for: <span class="font-semibold text-gray-700">${displayMonth}</span></p>
             </div>
             <div class="text-right">
                 <p class="text-sm text-gray-500">Generated on ${new Date().toLocaleDateString()}</p>
-                <button onclick="window.print()" class="mt-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 shadow-sm transition-colors">Print / Save PDF</button>
+                
             </div>
         </div>
 
