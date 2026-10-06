@@ -1,6 +1,7 @@
 import { getSession, isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import Link from 'next/link';
+import WinnersBanner from '@/components/WinnersBanner';
 
 export default async function Dashboard() {
   const session = await getSession();
@@ -37,13 +38,7 @@ export default async function Dashboard() {
       </div>
 
       {settings?.bannerText && (
-        <div className="bg-gradient-to-r from-[var(--primary)] to-indigo-500 rounded-lg overflow-hidden relative shadow-sm border border-indigo-200">
-          <div className="py-2.5 px-4 overflow-hidden whitespace-nowrap flex items-center">
-            <div className="text-white text-sm font-medium animate-marquee w-full">
-              {settings.bannerText}
-            </div>
-          </div>
-        </div>
+        <WinnersBanner text={settings.bannerText} />
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
