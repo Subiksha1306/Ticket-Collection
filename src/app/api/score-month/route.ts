@@ -98,7 +98,7 @@ You must return your response as a JSON object containing exactly two fields:
               content: prompt,
             }
           ],
-          model: 'llama-3.1-8b-instant',
+          model: 'openai/gpt-oss-120b',
           response_format: { type: 'json_object' },
         });
 
