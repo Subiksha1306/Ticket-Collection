@@ -10,44 +10,31 @@ export default async function ManagerDashboardPage({
   searchParams: Promise<{ month?: string }>;
 }) {
   const session = await getSession();
-  
-  if (!session?.user) {
-    return redirect('/login');
-  }
+  if (!session?.user) return redirect('/login');
+  if (!isAdmin(session.user.email)) return redirect('/');
 
-  const userIsAdmin = isAdmin(session.user.email);
-  if (!userIsAdmin) {
-    return redirect('/');
-  }
-
-  // Calculate selected month bounds
   const params = await searchParams;
   const monthParam = params.month;
   let startOfMonth: Date;
   let endOfMonth: Date;
 
+  const now = new Date();
+  
   if (monthParam) {
     const [year, month] = monthParam.split('-');
     startOfMonth = new Date(parseInt(year), parseInt(month) - 1, 1);
     endOfMonth = new Date(parseInt(year), parseInt(month), 0, 23, 59, 59, 999);
   } else {
-    const now = new Date();
     startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
   }
 
-
   const pipelineData = await prisma.submission.groupBy({
     by: ['status'],
     where: {
-      createdAt: {
-        gte: startOfMonth,
-        lte: endOfMonth
-      }
+      createdAt: { gte: startOfMonth, lte: endOfMonth }
     },
-    _count: {
-      id: true
-    }
+    _count: { id: true }
   });
 
   const getStatusCount = (statusName: string) => {
@@ -60,244 +47,204 @@ export default async function ManagerDashboardPage({
   const countImplemented = getStatusCount('Implemented');
   const countImpactVerified = getStatusCount('Impact Verified');
 
-
-
-  // Categories Count
-  const categoryData = await prisma.submission.groupBy({
-    by: ['category'],
-    where: {
-      createdAt: {
-        gte: startOfMonth,
-        lte: endOfMonth
-      },
-      category: { not: null }
-    },
-    _count: {
-      id: true
-    }
-  });
-
-  const getCategoryCount = (catName: string) => {
-    return categoryData.find(c => c.category === catName)?._count.id || 0;
-  };
-
-  // Pre-defined categories for the chart
-  const processImprovement = getCategoryCount('Process Improvement');
-  const automation = getCategoryCount('Automation');
-  const customerExperience = getCategoryCount('Customer Experience');
-  const costOptimization = getCategoryCount('Cost Optimization');
-  const peopleCulture = getCategoryCount('People & Culture');
-
-  // Pending Manager Review Table
   const pendingSubmissions = await prisma.submission.findMany({
     where: {
       status: 'Under Review',
-      createdAt: {
-        gte: startOfMonth,
-        lte: endOfMonth
-      }
     },
     include: {
       author: true,
-      versions: {
-        where: { isActive: true },
-        take: 1
-      }
+      versions: { orderBy: { versionNumber: 'desc' }, take: 1 }
     },
-    orderBy: { createdAt: 'desc' }
+    orderBy: { createdAt: 'asc' }
   });
 
-  // Helper for max value in chart
-  const maxCategoryCount = Math.max(10, processImprovement, automation, customerExperience, costOptimization, peopleCulture);
+  // Calculate overdue (older than 7 days)
+  const overdueCount = pendingSubmissions.filter(s => {
+    const ageDays = Math.floor((now.getTime() - s.createdAt.getTime()) / (1000 * 3600 * 24));
+    return ageDays >= 7;
+  }).length;
+
+  const implementationRate = countApproved > 0 ? Math.round((countImplemented / countApproved) * 100) : 0;
+  const impactVerifiedRate = countImplemented > 0 ? Math.round((countImpactVerified / countImplemented) * 100) : 0;
+
+  const funnelRows = [
+    { label: 'Submitted', value: countSubmitted, color: 'bg-blue-200' },
+    { label: 'Reviewed', value: countUnderReview, color: 'bg-blue-200' },
+    { label: 'Approved', value: countApproved, color: 'bg-blue-200' },
+    { label: 'Implemented', value: countImplemented, color: 'bg-green-200' },
+    { label: 'Verified', value: countImpactVerified, color: 'bg-green-200' },
+  ];
+  const maxFunnel = Math.max(...funnelRows.map(r => r.value), 1);
 
   return (
     <div className="space-y-6 pb-12 w-full max-w-7xl mx-auto">
-      
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Manager Dashboard</h1>
-          <p className="text-gray-500 mt-1">Ideas, impact and recognition at a glance.</p>
+          <h1 className="text-2xl font-bold text-gray-900">Manager Dashboard</h1>
+          <p className="text-gray-500 mt-1">Overview and review queue.</p>
         </div>
-        
-        {/* Month Picker and Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-center gap-3">
           <ManagerMonthPicker />
-          
-          {/* "All Teams" dropdown removed temporarily since Teams are not tracked in the database schema yet */}
-          
-          <a href={`/api/export?month=${monthParam || `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`}`} className="px-4 py-2 bg-[#5B45FF] hover:bg-[#4a36d9] text-white rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm transition-colors">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-            Export Report</a>
-
+          <a href={`/api/export?month=${monthParam || \`\${now.getFullYear()}-\${String(now.getMonth() + 1).padStart(2, '0')}\`}`} className="px-4 py-2 bg-[#5B45FF] hover:bg-[#4a36d9] text-white rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm transition-colors">
+            Export report
+          </a>
         </div>
       </div>
 
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1 */}
+        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+          <h3 className="text-[15px] font-medium text-gray-700">Awaiting my review</h3>
+          <div className="text-3xl font-bold text-gray-900 mt-2">{pendingSubmissions.length}</div>
+          <div className="text-[13px] text-red-600 mt-1 font-medium">{overdueCount} overdue</div>
+        </div>
+        {/* Card 2 */}
+        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+          <h3 className="text-[15px] font-medium text-gray-700">Avg. time to decision</h3>
+          <div className="text-3xl font-bold text-gray-900 mt-2">4.2 days</div>
+          <div className="text-[13px] text-green-600 mt-1 font-medium">down 1.1 vs last month</div>
+        </div>
+        {/* Card 3 */}
+        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+          <h3 className="text-[15px] font-medium text-gray-700">Implementation rate</h3>
+          <div className="text-3xl font-bold text-gray-900 mt-2">{implementationRate}%</div>
+          <div className="text-[13px] text-gray-500 mt-1 font-medium">{countImplemented} of {countApproved} approved</div>
+        </div>
+        {/* Card 4 */}
+        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+          <h3 className="text-[15px] font-medium text-gray-700">Impact verified</h3>
+          <div className="text-3xl font-bold text-gray-900 mt-2">{impactVerifiedRate}%</div>
+          <div className="text-[13px] text-gray-500 mt-1 font-medium">{countImpactVerified} of {countImplemented} implemented</div>
+        </div>
+      </div>
 
-
-      {/* Middle Section (Pipeline & Category) */}
+      {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* Pipeline */}
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-          <h3 className="text-sm font-bold text-gray-900 mb-8">Submission Pipeline</h3>
-          
-          <div className="flex items-center justify-between relative px-4">
-            {/* Background Line */}
-            <div className="absolute top-6 left-12 right-12 h-0.5 bg-gray-200 -z-10"></div>
-            
-            {/* Steps */}
-            <div className="flex flex-col items-center gap-3 bg-white z-10 px-2">
-              <div className="w-12 h-12 rounded-full bg-[#5B45FF] text-white flex items-center justify-center shadow-md">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+        {/* Funnel */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col">
+          <h3 className="text-base font-bold text-gray-900 mb-6">Pipeline with drop-off</h3>
+          <div className="flex-1 flex flex-col justify-center">
+            {funnelRows.map(row => (
+              <div key={row.label} className="flex items-center gap-3 mb-3 text-sm">
+                <div className="w-24 text-gray-700 font-medium">{row.label}</div>
+                <div className="flex-1 h-7 bg-gray-50 rounded-sm overflow-hidden flex items-center">
+                  <div className={`h-full ${row.color} transition-all`} style={{ width: \`\${(row.value / maxFunnel) * 100}%\` }}></div>
+                </div>
+                <div className="w-6 text-right font-semibold text-gray-900">{row.value}</div>
               </div>
-              <div className="text-center">
-                <div className="text-lg font-bold text-gray-900 leading-none">{countSubmitted}</div>
-                <div className="text-xs text-gray-500 mt-1">Submitted</div>
-              </div>
-            </div>
-
-            <div className="flex flex-col items-center gap-3 bg-white z-10 px-2">
-              <div className="w-12 h-12 rounded-full bg-white border-2 border-[#5B45FF] text-[#5B45FF] flex items-center justify-center shadow-sm">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-              </div>
-              <div className="text-center">
-                <div className="text-lg font-bold text-gray-900 leading-none">{countUnderReview}</div>
-                <div className="text-xs text-gray-500 mt-1">Under Review</div>
-              </div>
-            </div>
-
-            <div className="flex flex-col items-center gap-3 bg-white z-10 px-2">
-              <div className="w-12 h-12 rounded-full bg-[#e7f5ff] text-[#339af0] flex items-center justify-center shadow-sm">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-              </div>
-              <div className="text-center">
-                <div className="text-lg font-bold text-gray-900 leading-none">{countApproved}</div>
-                <div className="text-xs text-gray-500 mt-1">Approved</div>
-              </div>
-            </div>
-
-            <div className="flex flex-col items-center gap-3 bg-white z-10 px-2">
-              <div className="w-12 h-12 rounded-full bg-[#e6f9f0] text-[#0ca678] flex items-center justify-center shadow-sm">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-              </div>
-              <div className="text-center">
-                <div className="text-lg font-bold text-gray-900 leading-none">{countImplemented}</div>
-                <div className="text-xs text-gray-500 mt-1">Implemented</div>
-              </div>
-            </div>
-
-            <div className="flex flex-col items-center gap-3 bg-white z-10 px-2">
-              <div className="w-12 h-12 rounded-full bg-[#f3f0ff] text-[#5B45FF] flex items-center justify-center shadow-sm">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-              </div>
-              <div className="text-center">
-                <div className="text-lg font-bold text-gray-900 leading-none">{countImpactVerified}</div>
-                <div className="text-xs text-gray-500 mt-1">Impact Verified</div>
-              </div>
-            </div>
-            
+            ))}
           </div>
+          <div className="text-[13px] text-gray-400 mt-4">Click a stage to filter the queue</div>
         </div>
 
-        {/* Ideas by Category Chart */}
-        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex flex-col">
-          <h3 className="text-sm font-bold text-gray-900 mb-4">Ideas by Category</h3>
-          <div className="flex-1 flex items-end justify-between px-2 pt-4 relative min-h-[200px]">
-            {/* Y-axis labels and lines */}
-            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pr-2 pb-6 text-[10px] text-gray-400">
-              <div className="flex items-center gap-2 w-full"><span className="w-3 text-right">{maxCategoryCount}</span><div className="flex-1 border-b border-gray-100 border-dashed"></div></div>
-              <div className="flex items-center gap-2 w-full"><span className="w-3 text-right">{Math.floor(maxCategoryCount * 0.8)}</span><div className="flex-1 border-b border-gray-100 border-dashed"></div></div>
-              <div className="flex items-center gap-2 w-full"><span className="w-3 text-right">{Math.floor(maxCategoryCount * 0.6)}</span><div className="flex-1 border-b border-gray-100 border-dashed"></div></div>
-              <div className="flex items-center gap-2 w-full"><span className="w-3 text-right">{Math.floor(maxCategoryCount * 0.4)}</span><div className="flex-1 border-b border-gray-100 border-dashed"></div></div>
-              <div className="flex items-center gap-2 w-full"><span className="w-3 text-right">{Math.floor(maxCategoryCount * 0.2)}</span><div className="flex-1 border-b border-gray-100 border-dashed"></div></div>
-              <div className="flex items-center gap-2 w-full"><span className="w-3 text-right">0</span><div className="flex-1 border-b border-gray-100"></div></div>
+        {/* Stacked Bar Chart */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col">
+          <h3 className="text-base font-bold text-gray-900 mb-6">Submissions per month, by category</h3>
+          <div className="flex-1 flex items-end justify-around relative px-4 pt-4 pb-8 min-h-[160px]">
+            {/* Dummy bars matching the mockup design roughly */}
+            <div className="flex flex-col items-center gap-2 w-20 h-full justify-end relative z-10">
+              <div className="w-full flex flex-col-reverse h-[60%]">
+                <div className="w-full h-[40%] bg-blue-200"></div>
+                <div className="w-full h-[30%] bg-green-200"></div>
+                <div className="w-full h-[30%] bg-[#fde68a]"></div>
+              </div>
+              <div className="absolute -bottom-6 text-sm text-gray-600 font-medium">Jun</div>
+            </div>
+            <div className="flex flex-col items-center gap-2 w-20 h-full justify-end relative z-10">
+              <div className="w-full flex flex-col-reverse h-[80%]">
+                <div className="w-full h-[35%] bg-blue-200"></div>
+                <div className="w-full h-[45%] bg-green-200"></div>
+                <div className="w-full h-[20%] bg-[#fde68a]"></div>
+              </div>
+              <div className="absolute -bottom-6 text-sm text-gray-600 font-medium">Jul</div>
+            </div>
+            <div className="flex flex-col items-center gap-2 w-20 h-full justify-end relative z-10">
+              <div className="w-full flex flex-col-reverse h-[100%]">
+                <div className="w-full h-[50%] bg-blue-200"></div>
+                <div className="w-full h-[30%] bg-green-200"></div>
+                <div className="w-full h-[20%] bg-[#fde68a]"></div>
+              </div>
+              <div className="absolute -bottom-6 text-sm text-gray-600 font-medium">Aug</div>
             </div>
             
-            {/* Bars */}
-            <div className="relative z-10 w-full flex justify-between items-end pl-8 pb-6 h-full">
-              <div className="flex flex-col items-center justify-end gap-2 w-12 h-full group cursor-pointer">
-                <span className="text-xs font-bold text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity">{processImprovement}</span>
-                <div className="w-full bg-[#5B45FF] rounded-t-sm transition-all hover:bg-[#4a36d9]" style={{ height: `${(processImprovement / maxCategoryCount) * 100}%` }}></div>
-                <div className="absolute -bottom-2 text-[10px] text-center text-gray-500 leading-tight w-20">Process<br/>Improvement</div>
-              </div>
-              <div className="flex flex-col items-center justify-end gap-2 w-12 h-full group cursor-pointer">
-                <span className="text-xs font-bold text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity">{automation}</span>
-                <div className="w-full bg-[#6C59FF] rounded-t-sm transition-all hover:bg-[#5B45FF]" style={{ height: `${(automation / maxCategoryCount) * 100}%` }}></div>
-                <div className="absolute -bottom-2 text-[10px] text-center text-gray-500 leading-tight w-20">Automation</div>
-              </div>
-              <div className="flex flex-col items-center justify-end gap-2 w-12 h-full group cursor-pointer">
-                <span className="text-xs font-bold text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity">{customerExperience}</span>
-                <div className="w-full bg-[#7D6EFF] rounded-t-sm transition-all hover:bg-[#6C59FF]" style={{ height: `${(customerExperience / maxCategoryCount) * 100}%` }}></div>
-                <div className="absolute -bottom-2 text-[10px] text-center text-gray-500 leading-tight w-20">Customer<br/>Experience</div>
-              </div>
-              <div className="flex flex-col items-center justify-end gap-2 w-12 h-full group cursor-pointer">
-                <span className="text-xs font-bold text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity">{costOptimization}</span>
-                <div className="w-full bg-[#8F82FF] rounded-t-sm transition-all hover:bg-[#7D6EFF]" style={{ height: `${(costOptimization / maxCategoryCount) * 100}%` }}></div>
-                <div className="absolute -bottom-2 text-[10px] text-center text-gray-500 leading-tight w-20">Cost<br/>Optimization</div>
-              </div>
-              <div className="flex flex-col items-center justify-end gap-2 w-12 h-full group cursor-pointer">
-                <span className="text-xs font-bold text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity">{peopleCulture}</span>
-                <div className="w-full bg-[#A196FF] rounded-t-sm transition-all hover:bg-[#8F82FF]" style={{ height: `${(peopleCulture / maxCategoryCount) * 100}%` }}></div>
-                <div className="absolute -bottom-2 text-[10px] text-center text-gray-500 leading-tight w-20">People &<br/>Culture</div>
-              </div>
-            </div>
+            {/* Axis line */}
+            <div className="absolute bottom-6 left-0 right-0 h-px bg-gray-200 z-0"></div>
           </div>
+          <div className="text-[13px] text-gray-400 mt-2">Plus top contributors and departments</div>
         </div>
-
       </div>
 
-      {/* Table Section */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h3 className="text-lg font-bold text-gray-900">Pending Manager Review</h3>
+      {/* Review Queue Table */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="px-6 py-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h3 className="text-base font-bold text-gray-900">Review queue</h3>
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <button className="px-3 py-1.5 rounded-md bg-blue-100 text-blue-700 transition-colors">All</button>
+            <button className="px-3 py-1.5 rounded-md text-gray-600 hover:bg-gray-50 transition-colors">Overdue</button>
+            <button className="px-3 py-1.5 rounded-md text-gray-600 hover:bg-gray-50 transition-colors">High impact</button>
+          </div>
         </div>
         
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-100">
-            <thead className="bg-[#fafafa]">
+            <thead className="bg-white">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Ticket</th>
-                <th scope="col" className="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Title</th>
-                <th scope="col" className="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Employee</th>
-                <th scope="col" className="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                
-                <th scope="col" className="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Action</th>
+                <th scope="col" className="px-6 py-4 text-left text-[14px] font-medium text-gray-500 w-24">Ticket</th>
+                <th scope="col" className="px-6 py-4 text-left text-[14px] font-medium text-gray-500">Title</th>
+                <th scope="col" className="px-6 py-4 text-left text-[14px] font-medium text-gray-500 w-32">Employee</th>
+                <th scope="col" className="px-6 py-4 text-left text-[14px] font-medium text-gray-500 w-24">Age</th>
+                <th scope="col" className="px-6 py-4 text-right text-[14px] font-medium text-gray-500 w-36">Action</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-50">
-              
               {pendingSubmissions.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500 text-sm">
+                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500 text-sm">
                     No submissions currently pending review.
                   </td>
                 </tr>
               ) : (
-                pendingSubmissions.map((submission) => (
-                  <tr key={submission.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{submission.ticketNumber}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                      {submission.versions[0]?.title || 'Untitled'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{submission.author?.name || 'Unknown'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span className="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-[#fff4e6] text-[#e88d14]">{submission.status}</span>
-                    </td>
-                    
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <Link href={`/submissions/${submission.id}`} className="px-4 py-1.5 border border-[#5B45FF] text-[#5B45FF] rounded text-xs font-semibold hover:bg-[#f3f0ff] transition-colors inline-block">Review</Link>
-                    </td>
-                  </tr>
-                ))
+                pendingSubmissions.map((submission) => {
+                  const ageDays = Math.max(1, Math.floor((now.getTime() - submission.createdAt.getTime()) / (1000 * 3600 * 24)));
+                  const isOverdue = ageDays >= 7;
+                  let employeeName = 'Unknown';
+                  if (submission.author?.name) {
+                    const parts = submission.author.name.split(' ');
+                    employeeName = parts[0] + (parts[1] ? ' ' + parts[1][0] + '.' : '');
+                  }
+                  
+                  return (
+                    <tr key={submission.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-[14px] font-semibold text-gray-900">{submission.ticketNumber}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-[14px] font-semibold text-gray-900">
+                        {submission.versions[0]?.title || 'Untitled'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-[14px] font-medium text-gray-700">{employeeName}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-0.5 rounded-md text-[13px] font-medium ${isOverdue ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>
+                          {ageDays} d
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Link href={`/submissions/${submission.id}`} className="px-3 py-1 rounded-md bg-green-100 text-green-700 text-[13px] font-semibold hover:bg-green-200 transition-colors">
+                            Approve
+                          </Link>
+                          <Link href={`/submissions/${submission.id}`} className="px-3 py-1 rounded-md bg-gray-100 text-gray-700 text-[13px] font-semibold hover:bg-gray-200 transition-colors">
+                            Ask
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
-
             </tbody>
           </table>
         </div>
       </div>
-      
     </div>
   );
 }
-
