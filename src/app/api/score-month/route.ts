@@ -62,10 +62,14 @@ export async function POST(req: NextRequest) {
     }
 
     let scoredCount = 0;
+    let lastError = '';
 
     for (const sub of submissions) {
       const latestVersion = sub.versions[0];
-      if (!latestVersion) continue;
+      if (!latestVersion) {
+        lastError = `Ticket ${sub.ticketNumber} has no versions.`;
+        continue;
+      }
 
       const submissionContent = `
 Title: ${latestVersion.title}
@@ -110,11 +114,15 @@ You must return your response as a JSON object containing exactly two fields:
             scoredCount++;
           }
         }
-      } catch (err) {
+      } catch (err: any) {
+        lastError = err.message || err.toString();
         console.error(`Failed to score submission ${sub.id}:`, err);
       }
     }
 
+    if (scoredCount === 0 && lastError) {
+      return NextResponse.json({ message: `Scored 0 submissions. Error: ${lastError}`, count: 0 });
+    }
     return NextResponse.json({ message: `Successfully scored ${scoredCount} submissions.`, count: scoredCount });
   } catch (error) {
     console.error('Scoring error:', error);
