@@ -245,8 +245,8 @@ document.getElementById('co').onclick=function(){tks.forEach(function(k){k.open=
       }
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Export error:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
+    return new NextResponse(`Internal Server Error: ${error.message || error.toString()}`, { status: 500 });
   }
 }
