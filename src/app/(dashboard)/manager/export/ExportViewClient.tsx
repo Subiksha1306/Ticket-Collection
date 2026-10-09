@@ -16,8 +16,9 @@ type ExportSubmission = {
   id: string;
   ticketNumber: string;
   status: string;
-  
+  score: number | null;
   category: string | null;
+  createdAt: string;
   updatedAt: string;
   versions: ExportVersion[];
 };
