@@ -98,8 +98,8 @@ export default async function ManagerDashboardPage({
     let cat3 = 0; // yellow
     
     subsInMonth.forEach(s => {
-      if (s.category === 'Process Improvement' || s.category === 'Customer Experience') cat1++;
-      else if (s.category === 'Automation' || s.category === 'Cost Optimization') cat2++;
+      if (s.category === 'Process Improvement') cat1++;
+      else if (s.category === 'Automation') cat2++;
       else cat3++;
     });
     
@@ -197,7 +197,11 @@ export default async function ManagerDashboardPage({
             {/* Axis line */}
             <div className="absolute bottom-6 left-0 right-0 h-px bg-gray-200 z-0"></div>
           </div>
-          <div className="text-[13px] text-gray-400 mt-2">Plus top contributors and departments</div>
+          <div className="flex items-center gap-4 text-[12px] text-gray-500 mt-3 justify-center">
+            <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm bg-blue-200"></div>Process Improvement</div>
+            <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm bg-green-200"></div>Automation</div>
+            <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm bg-[#fde68a]"></div>Other</div>
+          </div>
         </div>
       </div>
 
