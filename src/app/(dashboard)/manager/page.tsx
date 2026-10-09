@@ -76,6 +76,46 @@ export default async function ManagerDashboardPage({
   ];
   const maxFunnel = Math.max(...funnelRows.map(r => r.value), 1);
 
+  const threeMonthsAgoStart = new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() - 2, 1);
+  const chartSubmissions = await prisma.submission.findMany({
+    where: {
+      createdAt: { gte: threeMonthsAgoStart, lte: endOfMonth }
+    },
+    select: { createdAt: true, category: true }
+  });
+
+  const chartMonths = [];
+  let maxMonthTotal = 0;
+  
+  for (let i = 2; i >= 0; i--) {
+    const d = new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() - i, 1);
+    const monthLabel = d.toLocaleString('en-US', { month: 'short' });
+    
+    const subsInMonth = chartSubmissions.filter(s => s.createdAt.getFullYear() === d.getFullYear() && s.createdAt.getMonth() === d.getMonth());
+    
+    let cat1 = 0; // blue
+    let cat2 = 0; // green
+    let cat3 = 0; // yellow
+    
+    subsInMonth.forEach(s => {
+      if (s.category === 'Process Improvement' || s.category === 'Customer Experience') cat1++;
+      else if (s.category === 'Automation' || s.category === 'Cost Optimization') cat2++;
+      else cat3++;
+    });
+    
+    const total = cat1 + cat2 + cat3;
+    if (total > maxMonthTotal) maxMonthTotal = total;
+    
+    chartMonths.push({
+      label: monthLabel,
+      total,
+      cat1, cat2, cat3
+    });
+  }
+
+  if (maxMonthTotal === 0) maxMonthTotal = 1;
+
+
   return (
     <div className="space-y-6 pb-12 w-full max-w-7xl mx-auto">
       {/* Header */}
@@ -143,32 +183,17 @@ export default async function ManagerDashboardPage({
         <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col">
           <h3 className="text-base font-bold text-gray-900 mb-6">Submissions per month, by category</h3>
           <div className="flex-1 flex items-end justify-around relative px-4 pt-4 pb-8 min-h-[160px]">
-            {/* Dummy bars matching the mockup design roughly */}
-            <div className="flex flex-col items-center gap-2 w-20 h-full justify-end relative z-10">
-              <div className="w-full flex flex-col-reverse h-[60%]">
-                <div className="w-full h-[40%] bg-blue-200"></div>
-                <div className="w-full h-[30%] bg-green-200"></div>
-                <div className="w-full h-[30%] bg-[#fde68a]"></div>
-              </div>
-              <div className="absolute -bottom-6 text-sm text-gray-600 font-medium">Jun</div>
-            </div>
-            <div className="flex flex-col items-center gap-2 w-20 h-full justify-end relative z-10">
-              <div className="w-full flex flex-col-reverse h-[80%]">
-                <div className="w-full h-[35%] bg-blue-200"></div>
-                <div className="w-full h-[45%] bg-green-200"></div>
-                <div className="w-full h-[20%] bg-[#fde68a]"></div>
-              </div>
-              <div className="absolute -bottom-6 text-sm text-gray-600 font-medium">Jul</div>
-            </div>
-            <div className="flex flex-col items-center gap-2 w-20 h-full justify-end relative z-10">
-              <div className="w-full flex flex-col-reverse h-[100%]">
-                <div className="w-full h-[50%] bg-blue-200"></div>
-                <div className="w-full h-[30%] bg-green-200"></div>
-                <div className="w-full h-[20%] bg-[#fde68a]"></div>
-              </div>
-              <div className="absolute -bottom-6 text-sm text-gray-600 font-medium">Aug</div>
-            </div>
             
+            {chartMonths.map((m, i) => (
+              <div key={i} className="flex flex-col items-center gap-2 w-20 h-full justify-end relative z-10">
+                <div className="w-full flex flex-col-reverse" style={{ height: `${(m.total / maxMonthTotal) * 100}%` }}>
+                  {m.cat1 > 0 && <div className="w-full bg-blue-200" style={{ height: `${(m.cat1 / m.total) * 100}%` }}></div>}
+                  {m.cat2 > 0 && <div className="w-full bg-green-200" style={{ height: `${(m.cat2 / m.total) * 100}%` }}></div>}
+                  {m.cat3 > 0 && <div className="w-full bg-[#fde68a]" style={{ height: `${(m.cat3 / m.total) * 100}%` }}></div>}
+                </div>
+                <div className="absolute -bottom-6 text-sm text-gray-600 font-medium">{m.label}</div>
+              </div>
+            ))}
             {/* Axis line */}
             <div className="absolute bottom-6 left-0 right-0 h-px bg-gray-200 z-0"></div>
           </div>
