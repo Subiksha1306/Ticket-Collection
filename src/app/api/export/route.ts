@@ -116,8 +116,9 @@ export async function GET(request: Request) {
                                         </div>
                                         <h4 class="text-base font-medium text-gray-800">${currentVersion?.title || 'No Title'}</h4>
                                     </div>
-                                    <div class="text-right">
+                                    <div class="text-right flex flex-col items-end gap-2">
                                         <span class="px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700">${currentVersion ? 'v' + currentVersion.versionNumber : 'v1'}</span>
+                                        ${sub.score !== null ? `<span class="px-2 py-0.5 rounded text-xs font-bold bg-amber-50 text-amber-600 border border-amber-200">Score: ${sub.score}</span>` : ''}
                                     </div>
                                 </div>
                                 

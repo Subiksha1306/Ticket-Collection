@@ -168,6 +168,7 @@ export default function ExportViewClient() {
                                             <span class="font-bold text-gray-900">${sub.ticketNumber}</span>
                                             <span class="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">${sub.status}</span>
                                             ${currentVersion ? `<span class="px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700">v${currentVersion.versionNumber}</span>` : ''}
+                                              ${sub.score !== null ? `<span class="px-2 py-0.5 rounded text-xs font-bold bg-amber-50 text-amber-600 border border-amber-200">Score: ${sub.score}</span>` : ''}
                                         </div>
                                         <h4 class="text-base font-medium text-gray-800">${currentVersion?.title || 'No Title'}</h4>
                                     </div>
@@ -298,6 +299,7 @@ export default function ExportViewClient() {
                               <span className="font-semibold text-gray-900 text-sm">{sub.ticketNumber}</span>
                               <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">{sub.status}</span>
                               {currentVersion && <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700">v{currentVersion.versionNumber}</span>}
+                              {sub.score !== null && <span className="px-2 py-0.5 rounded text-xs font-bold bg-amber-50 text-amber-600 border border-amber-200">Score: {sub.score}</span>}
                             </div>
                             <h4 className="text-sm font-medium text-gray-900 truncate mb-1">
                               {currentVersion?.title || 'No Title'}
