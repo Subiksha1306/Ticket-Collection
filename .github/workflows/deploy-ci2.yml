@@ -1,21 +1,26 @@
-name: Deploy ci-ticket-tool-impactx — CI
+name: Deploy ci-ticket-tool-impactx to Azure App Service
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       ref:
-        description: 'Branch or tag to deploy (defaults to main)'
+        description: Branch or tag to deploy
         required: false
-        default: 'main'
+        default: main
+
+concurrency:
+  group: deploy-ci-ticket-tool-impactx
+  cancel-in-progress: false
 
 env:
   AZURE_WEBAPP_NAME: ci-ticket-tool-impactx
   REGISTRY: ghcr.io
   IMAGE_NAME: techxle/ticket-tool-impactx
-  IMAGE_TAG: ci
-  APP_PORT: ${{ vars.PORT || '3000' }}
+  NEXTAUTH_URL: ${{ vars.NEXTAUTH_URL || secrets.NEXTAUTH_URL || 'https://ci-ticket-tool-impactx.azurewebsites.net' }}
+  NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || secrets.NEXT_PUBLIC_SUPABASE_URL }}
 
 jobs:
   build-and-deploy:
@@ -30,107 +35,143 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.ref || github.ref }}
+          ref: ${{ inputs.ref || github.ref }}
 
-      - name: Normalise image name to lowercase
-        run: echo "IMAGE_NAME=$(echo '${{ env.IMAGE_NAME }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+      - name: Validate deployment settings
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+          AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP || secrets.AZURE_RESOURCE_GROUP }}
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+          AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+          AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ env.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          set -euo pipefail
+          required=(
+            AZURE_CREDENTIALS AZURE_RESOURCE_GROUP GHCR_USERNAME GHCR_PAT
+            DATABASE_URL DIRECT_URL GROQ_API_KEY NEXTAUTH_SECRET
+            AZURE_AD_CLIENT_ID AZURE_AD_CLIENT_SECRET AZURE_AD_TENANT_ID
+            NEXT_PUBLIC_SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY
+          )
+          missing=()
+          for name in "${required[@]}"; do
+            if [[ -z "${!name}" ]]; then
+              missing+=("$name")
+            fi
+          done
+          if (( ${#missing[@]} > 0 )); then
+            printf 'Missing required GitHub environment ci settings: %s\n' "${missing[*]}" >&2
+            exit 1
+          fi
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+      - name: Resolve checked-out commit
+        id: source
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      - name: Sync package-lock.json
-        if: hashFiles('package.json') != ''
-        run: |
-          npm install --legacy-peer-deps --package-lock-only 2>/dev/null || \
-          npm install --legacy-peer-deps 2>/dev/null || true
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata
+      - name: Extract image metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=${{ env.IMAGE_TAG }}
-            type=sha,prefix=sha-
+            type=raw,value=sha-${{ steps.source.outputs.sha }}
+            type=raw,value=ci,enable=${{ github.ref == 'refs/heads/main' }}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           platforms: linux/amd64
+          build-args: |
+            NEXT_PUBLIC_SUPABASE_URL=${{ env.NEXT_PUBLIC_SUPABASE_URL }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Azure Login
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Push environment variables to Azure App Settings
+      - name: Configure and deploy Azure Web App container
         uses: azure/CLI@v2
+        env:
+          AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP || secrets.AZURE_RESOURCE_GROUP }}
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+          AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+          AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ steps.source.outputs.sha }}
         with:
-          azcliversion: 2.68.0
           inlineScript: |
-            RG="${{ secrets.AZURE_RESOURCE_GROUP }}"
-            if [ -z "$RG" ]; then
-              RG=$(az webapp list --query "[?name=='${{ env.AZURE_WEBAPP_NAME }}'].resourceGroup" -o tsv)
-            fi
+            set -euo pipefail
             az webapp config appsettings set \
-              --name "${{ env.AZURE_WEBAPP_NAME }}" \
-              --resource-group "$RG" \
+              --name "$AZURE_WEBAPP_NAME" \
+              --resource-group "$AZURE_RESOURCE_GROUP" \
               --settings \
-                WEBSITES_PORT="${{ env.APP_PORT }}" \
-                PORT="${{ env.APP_PORT }}" \
-                NODE_ENV="production" \
-                DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-                DIRECT_URL="${{ secrets.DIRECT_URL }}" \
-                JWT_SECRET="${{ secrets.JWT_SECRET }}" \
-                NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}" \
-                NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL || 'https://ci-ticket-tool-impactx.azurewebsites.net' }}"
+                WEBSITES_PORT=3000 \
+                PORT=3000 \
+                NODE_ENV=production \
+                WEBSITE_WARMUP_PATH=/login \
+                WEBSITE_WARMUP_STATUSES=200 \
+                WEBSITES_CONTAINER_START_TIME_LIMIT=600 \
+                "DATABASE_URL=$DATABASE_URL" \
+                "DIRECT_URL=$DIRECT_URL" \
+                "GROQ_API_KEY=$GROQ_API_KEY" \
+                "NEXTAUTH_SECRET=$NEXTAUTH_SECRET" \
+                "NEXTAUTH_URL=$NEXTAUTH_URL" \
+                "AZURE_AD_CLIENT_ID=$AZURE_AD_CLIENT_ID" \
+                "AZURE_AD_CLIENT_SECRET=$AZURE_AD_CLIENT_SECRET" \
+                "AZURE_AD_TENANT_ID=$AZURE_AD_TENANT_ID" \
+                "NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL" \
+                "SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY" \
+              --output none
 
-      - name: Configure GHCR pull credentials on Azure Web App
-        uses: azure/CLI@v2
-        with:
-          azcliversion: 2.68.0
-          inlineScript: |
-            RG="${{ secrets.AZURE_RESOURCE_GROUP }}"
-            if [ -z "$RG" ]; then
-              RG=$(az webapp list --query "[?name=='${{ env.AZURE_WEBAPP_NAME }}'].resourceGroup" -o tsv)
-            fi
-            GHCR_PAT="${{ secrets.GHCR_PAT }}"
-            if [ -n "$GHCR_PAT" ]; then
-              az webapp config container set \
-                --name "${{ env.AZURE_WEBAPP_NAME }}" \
-                --resource-group "$RG" \
-                --container-image-name "ghcr.io/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}" \
-                --container-registry-url "https://ghcr.io" \
-                --container-registry-user "${{ github.actor }}" \
-                --container-registry-password "$GHCR_PAT"
-            else
-              az webapp config container set \
-                --name "${{ env.AZURE_WEBAPP_NAME }}" \
-                --resource-group "$RG" \
-                --container-image-name "ghcr.io/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
-            fi
+            az webapp config container set \
+              --name "$AZURE_WEBAPP_NAME" \
+              --resource-group "$AZURE_RESOURCE_GROUP" \
+              --container-image-name "$IMAGE" \
+              --container-registry-url "https://ghcr.io" \
+              --container-registry-user "$GHCR_USERNAME" \
+              --container-registry-password "$GHCR_PAT" \
+              --output none
 
-      - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            az webapp restart \
+              --name "$AZURE_WEBAPP_NAME" \
+              --resource-group "$AZURE_RESOURCE_GROUP" \
+              --output none
 
-      - name: Print deployment URL
-        run: echo "✅ Deployed to https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net"
+      - name: Verify deployed app responds
+        env:
+          APP_URL: ${{ env.NEXTAUTH_URL }}
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error \
+            --retry 18 --retry-delay 10 --retry-all-errors --max-time 20 \
+            --output /dev/null "${APP_URL%/}/login"
+          echo "Deployment healthy at ${APP_URL%/}"
