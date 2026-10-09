@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession, isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { GoogleGenAI, Type } from '@google/genai';
+import Groq from 'groq-sdk';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const RUBRIC = `### Scoring rubric
  
@@ -72,6 +72,7 @@ Title: ${latestVersion.title}
 Category: ${sub.category || 'None'}
 Content: ${latestVersion.description}
 `;
+      
       const prompt = `You are an expert evaluator scoring a submission for an internal company awards program.
 Evaluate the following submission using the exact rubric and principles provided.
 
@@ -80,26 +81,25 @@ ${RUBRIC}
 Here is the submission:
 ${submissionContent}
 
-Evaluate the submission and provide the final score out of 100.`;
+Evaluate the submission and provide the final score out of 100.
+You must return your response as a JSON object containing exactly two fields:
+- "reasoning": A brief explanation of how the score was calculated across criteria.
+- "score": The final integer score out of 100.`;
 
       try {
-        const response = await ai.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: prompt,
-          config: {
-            responseMimeType: 'application/json',
-            responseSchema: {
-              type: Type.OBJECT,
-              properties: {
-                reasoning: { type: Type.STRING, description: 'Brief explanation of how the score was calculated across criteria' },
-                score: { type: Type.INTEGER, description: 'The final integer score out of 100' }
-              },
-              required: ['reasoning', 'score']
+        const chatCompletion = await groq.chat.completions.create({
+          messages: [
+            {
+              role: 'user',
+              content: prompt,
             }
-          }
+          ],
+          model: 'llama-3.3-70b-versatile',
+          response_format: { type: 'json_object' },
         });
 
-        const resultText = response.text;
+        const resultText = chatCompletion.choices[0]?.message?.content;
+        
         if (resultText) {
           const parsed = JSON.parse(resultText);
           if (typeof parsed.score === 'number') {

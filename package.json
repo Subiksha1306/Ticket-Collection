@@ -10,7 +10,6 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@google/genai": "^2.28.0",
     "@next-auth/prisma-adapter": "^1.0.7",
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
@@ -19,6 +18,7 @@
     "csv-stringify": "^6.8.3",
     "date-fns": "^4.4.0",
     "dotenv": "^17.4.2",
+    "groq-sdk": "^1.6.0",
     "jose": "^6.2.8",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
