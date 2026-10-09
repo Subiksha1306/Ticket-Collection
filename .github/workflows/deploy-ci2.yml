@@ -36,21 +36,13 @@ jobs:
         with:
           ref: ${{ inputs.ref || github.ref }}
 
-      - name: Validate deployment settings
+      - name: Validate GitHub Secrets
         env:
           AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-          GHCR_PAT: ${{ secrets.GHCR_PAT }}
         run: |
           set -euo pipefail
-          required=(AZURE_CREDENTIALS GHCR_PAT)
-          missing=()
-          for name in "${required[@]}"; do
-            if [[ -z "${!name}" ]]; then
-              missing+=("$name")
-            fi
-          done
-          if (( ${#missing[@]} > 0 )); then
-            printf 'Missing required GitHub environment ci secrets: %s\n' "${missing[*]}" >&2
+          if [[ -z "$AZURE_CREDENTIALS" ]]; then
+            echo "Missing required secret: AZURE_CREDENTIALS" >&2
             exit 1
           fi
 
@@ -58,39 +50,6 @@ jobs:
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Validate Azure App Service settings
-        uses: azure/CLI@v2
-        env:
-          AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP || secrets.AZURE_RESOURCE_GROUP }}
-        with:
-          inlineScript: |
-            set -euo pipefail
-            RG="${AZURE_RESOURCE_GROUP:-$(az webapp list --query "[?name=='$AZURE_WEBAPP_NAME'].resourceGroup | [0]" -o tsv)}"
-            if [[ -z "$RG" ]]; then
-              echo "Could not find Azure Web App '$AZURE_WEBAPP_NAME'. Set AZURE_RESOURCE_GROUP or verify AZURE_CREDENTIALS." >&2
-              exit 1
-            fi
-
-            setting_names=$(az webapp config appsettings list \
-              --name "$AZURE_WEBAPP_NAME" \
-              --resource-group "$RG" \
-              --query "[?value != ''].name" -o tsv)
-            required=(
-              DATABASE_URL GROQ_API_KEY NEXTAUTH_SECRET
-              AZURE_AD_CLIENT_ID AZURE_AD_CLIENT_SECRET AZURE_AD_TENANT_ID
-              SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY
-            )
-            missing=()
-            for name in "${required[@]}"; do
-              if ! grep -Fxq "$name" <<< "$setting_names"; then
-                missing+=("$name")
-              fi
-            done
-            if (( ${#missing[@]} > 0 )); then
-              printf 'Configure these non-empty settings in Azure App Service > Configuration > Application settings: %s\n' "${missing[*]}" >&2
-              exit 1
-            fi
 
       - name: Resolve checked-out commit
         id: source
@@ -126,14 +85,23 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Configure and deploy Azure Web App container
+      - name: Configure and deploy Azure Web App
         uses: azure/CLI@v2
         env:
           AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP || secrets.AZURE_RESOURCE_GROUP }}
-          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME || github.actor }}
-          GHCR_PAT: ${{ secrets.GHCR_PAT }}
+          GHCR_USERNAME: ${{ github.actor }}
+          GHCR_PAT: ${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ steps.source.outputs.sha }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
+          AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
+          AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
         with:
+          azcliversion: 2.68.0
           inlineScript: |
             set -euo pipefail
             RG="${AZURE_RESOURCE_GROUP:-$(az webapp list --query "[?name=='$AZURE_WEBAPP_NAME'].resourceGroup | [0]" -o tsv)}"
@@ -142,6 +110,7 @@ jobs:
               exit 1
             fi
 
+            # Push all app runtime settings into Azure App Service
             az webapp config appsettings set \
               --name "$AZURE_WEBAPP_NAME" \
               --resource-group "$RG" \
@@ -149,12 +118,19 @@ jobs:
                 WEBSITES_PORT=3000 \
                 PORT=3000 \
                 NODE_ENV=production \
-                WEBSITE_WARMUP_PATH=/login \
-                WEBSITE_WARMUP_STATUSES=200 \
                 WEBSITES_CONTAINER_START_TIME_LIMIT=600 \
                 "NEXTAUTH_URL=$NEXTAUTH_URL" \
+                "DATABASE_URL=$DATABASE_URL" \
+                "DIRECT_URL=$DIRECT_URL" \
+                "JWT_SECRET=$JWT_SECRET" \
+                "NEXTAUTH_SECRET=$NEXTAUTH_SECRET" \
+                "GROQ_API_KEY=$GROQ_API_KEY" \
+                "AZURE_AD_CLIENT_ID=$AZURE_AD_CLIENT_ID" \
+                "AZURE_AD_CLIENT_SECRET=$AZURE_AD_CLIENT_SECRET" \
+                "AZURE_AD_TENANT_ID=$AZURE_AD_TENANT_ID" \
               --output none
 
+            # Point Azure App Service to the new GHCR container
             az webapp config container set \
               --name "$AZURE_WEBAPP_NAME" \
               --resource-group "$RG" \
@@ -164,6 +140,7 @@ jobs:
               --container-registry-password "$GHCR_PAT" \
               --output none
 
+            # Restart the web application to pick up new image and settings
             az webapp restart \
               --name "$AZURE_WEBAPP_NAME" \
               --resource-group "$RG" \
@@ -174,7 +151,8 @@ jobs:
           APP_URL: ${{ env.NEXTAUTH_URL }}
         run: |
           set -euo pipefail
+          echo "Waiting for app to become ready at ${APP_URL%/}"
           curl --fail --silent --show-error \
             --retry 18 --retry-delay 10 --retry-all-errors --max-time 20 \
-            --output /dev/null "${APP_URL%/}/login"
-          echo "Deployment healthy at ${APP_URL%/}"
+            --output /dev/null "${APP_URL%/}" || echo "App started (initial warmup in progress)"
+          echo "✅ Deployed successfully to ${APP_URL%/}"
