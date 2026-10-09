@@ -98,7 +98,7 @@ You must return your response as a JSON object containing exactly two fields:
               content: prompt,
             }
           ],
-          model: 'llama3-70b-8192',
+          model: 'llama-3.1-8b-instant',
           response_format: { type: 'json_object' },
         });
 
