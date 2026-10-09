@@ -20,7 +20,6 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: techxle/ticket-tool-impactx
   NEXTAUTH_URL: ${{ vars.NEXTAUTH_URL || secrets.NEXTAUTH_URL || 'https://ci-ticket-tool-impactx.azurewebsites.net' }}
-  NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || secrets.NEXT_PUBLIC_SUPABASE_URL }}
 
 jobs:
   build-and-deploy:
@@ -40,26 +39,10 @@ jobs:
       - name: Validate deployment settings
         env:
           AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-          AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP || secrets.AZURE_RESOURCE_GROUP }}
-          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
           GHCR_PAT: ${{ secrets.GHCR_PAT }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
-          AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
-          AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
-          AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
-          NEXT_PUBLIC_SUPABASE_URL: ${{ env.NEXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           set -euo pipefail
-          required=(
-            AZURE_CREDENTIALS AZURE_RESOURCE_GROUP GHCR_USERNAME GHCR_PAT
-            DATABASE_URL DIRECT_URL GROQ_API_KEY NEXTAUTH_SECRET
-            AZURE_AD_CLIENT_ID AZURE_AD_CLIENT_SECRET AZURE_AD_TENANT_ID
-            NEXT_PUBLIC_SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY
-          )
+          required=(AZURE_CREDENTIALS GHCR_PAT)
           missing=()
           for name in "${required[@]}"; do
             if [[ -z "${!name}" ]]; then
@@ -67,9 +50,47 @@ jobs:
             fi
           done
           if (( ${#missing[@]} > 0 )); then
-            printf 'Missing required GitHub environment ci settings: %s\n' "${missing[*]}" >&2
+            printf 'Missing required GitHub environment ci secrets: %s\n' "${missing[*]}" >&2
             exit 1
           fi
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Validate Azure App Service settings
+        uses: azure/CLI@v2
+        env:
+          AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP || secrets.AZURE_RESOURCE_GROUP }}
+        with:
+          inlineScript: |
+            set -euo pipefail
+            RG="${AZURE_RESOURCE_GROUP:-$(az webapp list --query "[?name=='$AZURE_WEBAPP_NAME'].resourceGroup | [0]" -o tsv)}"
+            if [[ -z "$RG" ]]; then
+              echo "Could not find Azure Web App '$AZURE_WEBAPP_NAME'. Set AZURE_RESOURCE_GROUP or verify AZURE_CREDENTIALS." >&2
+              exit 1
+            fi
+
+            setting_names=$(az webapp config appsettings list \
+              --name "$AZURE_WEBAPP_NAME" \
+              --resource-group "$RG" \
+              --query "[?value != ''].name" -o tsv)
+            required=(
+              DATABASE_URL GROQ_API_KEY NEXTAUTH_SECRET
+              AZURE_AD_CLIENT_ID AZURE_AD_CLIENT_SECRET AZURE_AD_TENANT_ID
+              SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY
+            )
+            missing=()
+            for name in "${required[@]}"; do
+              if ! grep -Fxq "$name" <<< "$setting_names"; then
+                missing+=("$name")
+              fi
+            done
+            if (( ${#missing[@]} > 0 )); then
+              printf 'Configure these non-empty settings in Azure App Service > Configuration > Application settings: %s\n' "${missing[*]}" >&2
+              exit 1
+            fi
 
       - name: Resolve checked-out commit
         id: source
@@ -100,39 +121,30 @@ jobs:
           context: .
           push: true
           platforms: linux/amd64
-          build-args: |
-            NEXT_PUBLIC_SUPABASE_URL=${{ env.NEXT_PUBLIC_SUPABASE_URL }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
       - name: Configure and deploy Azure Web App container
         uses: azure/CLI@v2
         env:
           AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP || secrets.AZURE_RESOURCE_GROUP }}
-          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME || github.actor }}
           GHCR_PAT: ${{ secrets.GHCR_PAT }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
-          AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
-          AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
-          AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ steps.source.outputs.sha }}
         with:
           inlineScript: |
             set -euo pipefail
+            RG="${AZURE_RESOURCE_GROUP:-$(az webapp list --query "[?name=='$AZURE_WEBAPP_NAME'].resourceGroup | [0]" -o tsv)}"
+            if [[ -z "$RG" ]]; then
+              echo "Could not find Azure Web App '$AZURE_WEBAPP_NAME'. Set AZURE_RESOURCE_GROUP or verify AZURE_CREDENTIALS." >&2
+              exit 1
+            fi
+
             az webapp config appsettings set \
               --name "$AZURE_WEBAPP_NAME" \
-              --resource-group "$AZURE_RESOURCE_GROUP" \
+              --resource-group "$RG" \
               --settings \
                 WEBSITES_PORT=3000 \
                 PORT=3000 \
@@ -140,21 +152,12 @@ jobs:
                 WEBSITE_WARMUP_PATH=/login \
                 WEBSITE_WARMUP_STATUSES=200 \
                 WEBSITES_CONTAINER_START_TIME_LIMIT=600 \
-                "DATABASE_URL=$DATABASE_URL" \
-                "DIRECT_URL=$DIRECT_URL" \
-                "GROQ_API_KEY=$GROQ_API_KEY" \
-                "NEXTAUTH_SECRET=$NEXTAUTH_SECRET" \
                 "NEXTAUTH_URL=$NEXTAUTH_URL" \
-                "AZURE_AD_CLIENT_ID=$AZURE_AD_CLIENT_ID" \
-                "AZURE_AD_CLIENT_SECRET=$AZURE_AD_CLIENT_SECRET" \
-                "AZURE_AD_TENANT_ID=$AZURE_AD_TENANT_ID" \
-                "NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL" \
-                "SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY" \
               --output none
 
             az webapp config container set \
               --name "$AZURE_WEBAPP_NAME" \
-              --resource-group "$AZURE_RESOURCE_GROUP" \
+              --resource-group "$RG" \
               --container-image-name "$IMAGE" \
               --container-registry-url "https://ghcr.io" \
               --container-registry-user "$GHCR_USERNAME" \
@@ -163,7 +166,7 @@ jobs:
 
             az webapp restart \
               --name "$AZURE_WEBAPP_NAME" \
-              --resource-group "$AZURE_RESOURCE_GROUP" \
+              --resource-group "$RG" \
               --output none
 
       - name: Verify deployed app responds
