@@ -1,28 +1,5 @@
 name: Deploy ci-ticket-tool-impactx — CI
 
-# ── Configuration — GitHub Environment: ci ───────────────────
-# All secrets and variables are loaded from:
-#   Settings → Environments → ci → Secrets and variables
-#
-# Required secrets (set once per environment, never repeated across pipelines):
-#   AZURE_CREDENTIALS          — Azure service principal JSON
-#                                (az ad sp create-for-rbac --sdk-auth)
-#   GHCR_PAT                   — GitHub Container Registry Personal Access Token
-#
-# Supabase secrets (auto-pushed by Envora provisioner if configured in server .env):
-#   VITE_SUPABASE_URL             — Supabase project URL
-#   VITE_SUPABASE_PUBLISHABLE_KEY — Supabase publishable (anon) key for browser
-#   VITE_SUPABASE_PROJECT_ID      — Supabase project ID
-#   VITE_SUPABASE_ANON_KEY        — Supabase anonymous key
-#   SUPABASE_SERVICE_ROLE_KEY     — Supabase service role key (server-side only)
-#   DESTINATION_DB_URL            — Postgres connection string; when set the
-#                                   migration step runs automatically on every deploy
-#
-# Optional environment variables:
-#   AZURE_RESOURCE_GROUP — Resource group for this environment
-#                          (auto-discovered from app name if omitted)
-# ─────────────────────────────────────────────────────────────────────────────
-
 on:
   push:
     branches: [main]
@@ -37,15 +14,8 @@ env:
   AZURE_WEBAPP_NAME: ci-ticket-tool-impactx
   REGISTRY: ghcr.io
   IMAGE_NAME: techxle/ticket-tool-impactx
-  # Environment-specific tag — never collides with other environments
   IMAGE_TAG: ci
-  # Port your container listens on. Azure App Service routes external traffic to
-  # WEBSITES_PORT — if it doesn't match the port your app binds to, the site
-  # returns 502/timeout. Override per environment with the `PORT` variable
-  # (Settings → Environments → Variables) if your container uses a different port.
   APP_PORT: ${{ vars.PORT || '3000' }}
-  # Supabase — expose as env vars so the migration step can check presence
-  DESTINATION_DB_URL: ${{ secrets.DESTINATION_DB_URL }}
 
 jobs:
   build-and-deploy:
@@ -74,9 +44,6 @@ jobs:
       - name: Sync package-lock.json
         if: hashFiles('package.json') != ''
         run: |
-          # Regenerate the lock file in the runner workspace so Docker COPY
-          # picks up a file that is in sync with package.json.
-          # This fixes 'npm ci' failures when the lock file is stale or missing.
           npm install --legacy-peer-deps --package-lock-only 2>/dev/null || \
           npm install --legacy-peer-deps 2>/dev/null || true
 
@@ -101,66 +68,11 @@ jobs:
         with:
           context: .
           push: true
-          # amd64 only: Azure Web App pulls linux/amd64, and the arm64 leg ran
-          # under QEMU emulation where Node crashes (SIGILL) during pnpm install
           platforms: linux/amd64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: |
-            VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}
-            VITE_SUPABASE_PUBLISHABLE_KEY=${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-            VITE_SUPABASE_PROJECT_ID=${{ secrets.VITE_SUPABASE_PROJECT_ID }}
-            VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}
-
-      # ── Supabase migrations (runs only when DESTINATION_DB_URL secret is set) ─
-      - name: Run Supabase migrations
-        if: env.DESTINATION_DB_URL != ''
-        continue-on-error: true
-        env:
-          DESTINATION_DB_URL: ${{ secrets.DESTINATION_DB_URL }}
-        run: |
-          echo "Installing psql client…"
-          sudo apt-get install -y postgresql-client -q
-
-          echo "Ensuring migration tracking table exists…"
-          psql "$DESTINATION_DB_URL" -c "
-            CREATE TABLE IF NOT EXISTS _migrations (
-              version TEXT PRIMARY KEY,
-              applied_at TIMESTAMPTZ DEFAULT NOW()
-            );"
-
-          # Bootstrap: if tracking table is empty but DB already has user tables,
-          # the DB was created before tracking — mark all current files as applied.
-          TRACKED=$(psql "$DESTINATION_DB_URL" -tAc "SELECT COUNT(*) FROM _migrations;")
-          DB_TABLES=$(psql "$DESTINATION_DB_URL" -tAc "
-            SELECT COUNT(*) FROM information_schema.tables
-            WHERE table_schema = 'public' AND table_name != '_migrations';")
-          if [ "$TRACKED" = "0" ] && [ "$DB_TABLES" -gt "0" ]; then
-            echo "Bootstrapping: DB has existing tables — marking all current migrations as already applied…"
-            for f in $(ls supabase/migrations/*.sql 2>/dev/null | sort); do
-              VERSION=$(basename "$f" | cut -d'_' -f1)
-              psql "$DESTINATION_DB_URL" -c "INSERT INTO _migrations (version) VALUES ('$VERSION') ON CONFLICT DO NOTHING;"
-              echo "  ✓ Marked $VERSION as applied"
-            done
-            echo "Bootstrap complete — only new migrations will run going forward"
-          fi
-
-          echo "Running Supabase migrations against the destination database…"
-          for f in $(ls supabase/migrations/*.sql 2>/dev/null | sort); do
-            VERSION=$(basename "$f" | cut -d'_' -f1)
-            APPLIED=$(psql "$DESTINATION_DB_URL" -tAc "SELECT COUNT(*) FROM _migrations WHERE version = '$VERSION';")
-            if [ "$APPLIED" = "0" ]; then
-              echo "→ Applying $(basename $f)…"
-              psql "$DESTINATION_DB_URL" -v ON_ERROR_STOP=1 -f "$f"
-              psql "$DESTINATION_DB_URL" -c "INSERT INTO _migrations (version) VALUES ('$VERSION');"
-              echo "  ✅ Applied"
-            else
-              echo "→ Skipping $(basename $f) (already applied)"
-            fi
-          done
-          echo "✅ All migrations complete"
 
       - name: Azure Login
         uses: azure/login@v1
@@ -172,7 +84,6 @@ jobs:
         with:
           azcliversion: 2.68.0
           inlineScript: |
-            # Resolve resource group — use the secret if set, otherwise discover from app name
             RG="${{ secrets.AZURE_RESOURCE_GROUP }}"
             if [ -z "$RG" ]; then
               RG=$(az webapp list --query "[?name=='${{ env.AZURE_WEBAPP_NAME }}'].resourceGroup" -o tsv)
@@ -183,12 +94,12 @@ jobs:
               --settings \
                 WEBSITES_PORT="${{ env.APP_PORT }}" \
                 PORT="${{ env.APP_PORT }}" \
-                VITE_SUPABASE_URL="${{ secrets.VITE_SUPABASE_URL }}" \
-                VITE_SUPABASE_PROJECT_ID="${{ secrets.VITE_SUPABASE_PROJECT_ID }}" \
-                VITE_SUPABASE_PUBLISHABLE_KEY="${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}" \
-                VITE_SUPABASE_ANON_KEY="${{ secrets.VITE_SUPABASE_ANON_KEY }}" \
-                SUPABASE_SERVICE_ROLE_KEY="${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
-                DESTINATION_DB_URL="${{ secrets.DESTINATION_DB_URL }}"
+                NODE_ENV="production" \
+                DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+                DIRECT_URL="${{ secrets.DIRECT_URL }}" \
+                JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+                NEXTAUTH_SECRET="${{ secrets.NEXTAUTH_SECRET }}" \
+                NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL || 'https://ci-ticket-tool-impactx.azurewebsites.net' }}"
 
       - name: Configure GHCR pull credentials on Azure Web App
         uses: azure/CLI@v2
@@ -209,7 +120,6 @@ jobs:
                 --container-registry-user "${{ github.actor }}" \
                 --container-registry-password "$GHCR_PAT"
             else
-              echo "ℹ️  GHCR_PAT secret not set — updating image name only (registry credentials unchanged)"
               az webapp config container set \
                 --name "${{ env.AZURE_WEBAPP_NAME }}" \
                 --resource-group "$RG" \
