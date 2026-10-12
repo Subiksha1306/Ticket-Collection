@@ -14,7 +14,7 @@ export default async function Dashboard() {
 
   const submissions = await prisma.submission.findMany({
     where: userIsAdmin ? undefined : { createdBy: userId },
-    orderBy: { updatedAt: 'desc' },
+    orderBy: { createdAt: 'desc' },
     take: 5,
     include: {
       author: true,

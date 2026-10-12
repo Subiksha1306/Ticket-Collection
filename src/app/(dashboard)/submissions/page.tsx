@@ -27,7 +27,7 @@ export default async function MySubmissionsPage(props: {
 
   let submissions = await prisma.submission.findMany({
     where: whereClause,
-    orderBy: { updatedAt: 'desc' },
+    orderBy: { createdAt: 'desc' },
     include: {
       author: true,
       versions: {
