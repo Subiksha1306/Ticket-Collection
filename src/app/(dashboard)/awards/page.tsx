@@ -103,9 +103,22 @@ export default async function AwardsPage() {
         <div className="flex items-end justify-between mb-6">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Previous Month Winners</h2>
-            <div className="flex items-center gap-2 text-gray-500 mt-1">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-              <span>{currentMonthDisplay}</span>
+            <div className="flex flex-wrap items-center gap-3 text-gray-500 mt-1">
+              <div className="flex items-center gap-1.5">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                <span>{currentMonthDisplay}</span>
+              </div>
+              <a
+                href="/api/export?type=awards"
+                download
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-semibold border border-purple-200 transition-colors shadow-xs"
+                title="Download monthly I2I Recognition Awards Dashboard as standalone HTML"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Export Awards Dashboard (HTML)
+              </a>
             </div>
           </div>
           <div className="hidden sm:block text-[#b38728] font-serif italic text-xl">
