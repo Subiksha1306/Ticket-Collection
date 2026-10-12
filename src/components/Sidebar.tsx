@@ -21,7 +21,9 @@ export default function Sidebar({ userName, isAdmin }: { userName?: string | nul
     <div className="w-64 bg-[#1A1D2D] text-white flex flex-col h-full border-r border-gray-800">
       <div className="p-4 py-5 flex items-center justify-center border-b border-gray-800/50">
         <Link href="/" className="flex items-center w-full justify-center px-2">
-          <img src="/logo-sidebar.png" alt="ImpactX" className="h-8 max-w-[170px] w-auto object-contain" />
+          <span className="font-papillon text-[27px] tracking-[0.04em] text-white select-none">
+            Impact<span className="text-[var(--primary)]">X</span>
+          </span>
         </Link>
       </div>
 

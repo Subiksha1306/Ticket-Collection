@@ -86,19 +86,11 @@ function SidebarView({
 }: SidebarViewProps) {
   return (
     <div className="flex flex-col h-full">
-      {/* Brand Logo */}
+      {/* Brand Logo in Papillon Serif Font */}
       <div className="pt-2 pb-6 px-3">
-        <Link href="/" onClick={onNavigate} className="inline-flex items-center gap-2 group">
-          <img
-            src="/logo.png"
-            alt="ImpactX"
-            className="h-8 max-w-[155px] w-auto object-contain transition-transform group-hover:scale-[1.02]"
-            onError={(e) => {
-              (e.target as HTMLElement).style.display = 'none';
-            }}
-          />
-          <span className="text-xl font-bold tracking-tight text-[var(--text)] select-none">
-            Impact<span className="text-[var(--primary)] font-extrabold">X</span>
+        <Link href="/" onClick={onNavigate} className="inline-flex items-center group focus:outline-none">
+          <span className="font-papillon text-[28px] tracking-[0.04em] text-[var(--text)] select-none leading-none transition-transform group-hover:scale-[1.02]">
+            Impact<span className="text-[var(--primary)]">X</span>
           </span>
         </Link>
       </div>

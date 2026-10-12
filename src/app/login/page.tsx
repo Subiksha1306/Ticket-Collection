@@ -37,7 +37,9 @@ export default async function LoginPage() {
       <div className="flex-1 flex flex-col justify-center px-8 sm:px-16 lg:px-24">
         <div className="max-w-md w-full mx-auto">
           <div className="text-center mb-10">
-            <img src="/logo.png" alt="ImpactX" className="h-14 w-auto mx-auto mb-6 object-contain" />
+            <span className="font-papillon text-[44px] tracking-[0.05em] text-[var(--text)] select-none block mb-4 leading-none">
+              Impact<span className="text-[var(--primary)]">X</span>
+            </span>
             <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome back</h2>
             <p className="text-gray-500">Sign in with your Techxle account to continue.</p>
           </div>

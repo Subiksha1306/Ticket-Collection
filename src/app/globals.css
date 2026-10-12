@@ -68,3 +68,7 @@ body {
   display: inline-block;
   animation: custom-marquee 30s linear infinite;
 }
+
+.font-papillon {
+  font-family: var(--font-papillon), "Bodoni MT", Didot, "Didot LT STD", "Hoefler Text", Garamond, "Times New Roman", serif;
+}
