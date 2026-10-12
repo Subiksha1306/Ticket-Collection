@@ -66,7 +66,7 @@ export default async function MySubmissionsPage(props: {
                 <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Submitted By</th>
               )}
               <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Version</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Last Updated</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Created Date</th>
               <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
             </tr>
           </thead>
@@ -99,7 +99,7 @@ export default async function MySubmissionsPage(props: {
                       v{currentVersion.versionNumber} {currentVersion.isDraft && <span className="ml-2 px-2 py-0.5 rounded text-xs bg-amber-100 text-amber-700 font-medium border border-amber-200">Draft</span>}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(sub.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                      {new Date(sub.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <Link href={`/submissions/${sub.id}`} className="text-[var(--primary)] hover:text-[var(--primary-hover)] inline-flex items-center gap-1">
