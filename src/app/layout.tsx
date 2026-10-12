@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ImpactX",
-  description: "ImpactX Ticketing System",
+  title: "Impactx",
+  description: "Impactx Ticketing System",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
