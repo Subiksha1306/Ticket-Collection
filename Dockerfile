@@ -7,6 +7,7 @@ COPY prisma.config.ts ./
 ENV DIRECT_URL=postgresql://build:build@localhost:5432/build \
 	DATABASE_URL=postgresql://build:build@localhost:5432/build
 RUN npm ci
+RUN npx prisma generate
 
 # Build stage
 FROM node:20-alpine AS builder
@@ -18,7 +19,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV DIRECT_URL=postgresql://build:build@localhost:5432/build \
 	DATABASE_URL=postgresql://build:build@localhost:5432/build \
 	NEXT_TELEMETRY_DISABLED=1
-RUN GROQ_API_KEY=build-placeholder npm run build
+RUN npx prisma generate && GROQ_API_KEY=build-placeholder npm run build
 
 # Production runtime stage
 FROM node:20-alpine AS runner

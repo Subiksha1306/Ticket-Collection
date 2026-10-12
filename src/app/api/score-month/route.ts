@@ -3,7 +3,11 @@ import { getSession, isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import Groq from 'groq-sdk';
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const getGroqClient = () => {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) return null;
+  return new Groq({ apiKey });
+};
 
 const RUBRIC = `### Scoring rubric
  
@@ -33,6 +37,11 @@ export async function POST(req: NextRequest) {
     const session = await getSession();
     if (!session?.user || !isAdmin(session.user.email)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const groqClient = getGroqClient();
+    if (!groqClient) {
+      return NextResponse.json({ error: 'GROQ_API_KEY is not configured' }, { status: 500 });
     }
 
     const { searchParams } = new URL(req.url);
@@ -91,7 +100,7 @@ You must return your response as a JSON object containing exactly two fields:
 - "score": The final integer score out of 100.`;
 
       try {
-        const chatCompletion = await groq.chat.completions.create({
+        const chatCompletion = await groqClient.chat.completions.create({
           messages: [
             {
               role: 'user',
