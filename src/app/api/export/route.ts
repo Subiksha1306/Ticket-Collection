@@ -129,19 +129,26 @@ export async function GET(request: Request) {
           if (!v) continue;
 
           const prompt = `You are an expert evaluator scoring a submission for an internal company awards program.
-Evaluate the following submission using the exact rubric and principles provided.
+Evaluate the following submission strictly adhering to the Scoring Rubric and Scoring Principles below:
 
 ${RUBRIC}
 
-Here is the submission:
+STRICT EVALUATION INSTRUCTIONS:
+1. Score ONLY the evidence written in the submission. Do NOT assume unwritten results, savings, or adoption.
+2. If the ticket is research-only, analysis-only, or merely proposed without actual completion, award a low implementation score (e.g. 5-10 max out of 20).
+3. Reward solutions that are reusable across teams/processes and explicitly prevent recurring problems.
+4. Reward concrete testing, documented scenarios, and measurable evidence.
+5. Apply the exact same objective standard to every employee.
+6. Provide a concise explanation under "reasoning" documenting why the score was awarded across each criterion.
+
+Here is the submission to evaluate:
 Ticket: ${sub.ticketNumber}
 Title: ${v.title}
 Category: ${sub.category || 'None'}
 Content: ${v.description}
 
-Evaluate the submission and provide the final score out of 100.
-You must return your response as a JSON object containing exactly two fields:
-- "reasoning": A brief explanation of how the score was awarded based on each criterion.
+Return your response as a valid JSON object with:
+- "reasoning": A breakdown documenting why each score was awarded per criterion.
 - "score": The final integer score out of 100 (between 0 and 100).`;
 
           try {
