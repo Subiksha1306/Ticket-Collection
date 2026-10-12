@@ -1,4 +1,4 @@
-import { getSession } from '@/lib/auth';
+import { getSession, isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -37,10 +37,11 @@ export default async function SubmissionDetailsPage({ params }: { params: Promis
   }
 
   const userId = (session.user as any)?.id;
-  const canEdit = userId === submission.createdBy;
+  const userIsAdmin = isAdmin(session.user?.email);
+  const canEdit = userId === submission.createdBy || userIsAdmin;
 
-  // Filter out drafts if the user is not the creator
-  submission.versions = submission.versions.filter(v => !v.isDraft || canEdit);
+  // Filter out unsubmitted drafts if the user is not the creator or admin, but keep historical versions for submitted tickets
+  submission.versions = submission.versions.filter(v => !v.isDraft || canEdit || submission.status !== 'Draft');
 
   const currentVersion = submission.versions[0];
   if (!currentVersion) return <div>No version found.</div>;

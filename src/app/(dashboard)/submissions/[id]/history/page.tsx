@@ -1,4 +1,4 @@
-import { getSession } from '@/lib/auth';
+import { getSession, isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
@@ -29,7 +29,8 @@ export default async function SubmissionHistoryPage({ params }: { params: Promis
   }
 
   const userId = session.user ? (session.user as any).id : null;
-  const canEdit = userId === submission.createdBy;
+  const userIsAdmin = isAdmin(session.user?.email);
+  const canEdit = userId === submission.createdBy || userIsAdmin;
 
   let versions = await prisma.submissionVersion.findMany({
     where: { submissionId: id },
@@ -40,8 +41,14 @@ export default async function SubmissionHistoryPage({ params }: { params: Promis
     }
   });
 
-  // Filter out drafts if the user is not the creator
-  versions = versions.filter(v => !v.isDraft || canEdit);
+  // If the submission is still an unpublished draft overall, only creator and admin can view it.
+  // For submitted tickets, show all historical versions (including v1 drafts) so the complete history is visible.
+  if (submission.status === 'Draft' && !canEdit) {
+    redirect('/submissions');
+  }
+
+  // If there is an in-progress unsubmitted new draft version created by someone else, filter it out for non-editors
+  versions = versions.filter(v => !v.isDraft || canEdit || submission.status !== 'Draft');
 
   const activeVersion = versions.find((v: any) => v.isActive) || versions[0];
 
