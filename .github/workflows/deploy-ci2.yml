@@ -1,4 +1,4 @@
-name: Deploy ci-ticket-tool-impactx to Azure App Service
+name: Deploy ticket-tool-impactx to Azure App Service
 
 on:
   push:
@@ -12,14 +12,14 @@ on:
         default: main
 
 concurrency:
-  group: deploy-ci-ticket-tool-impactx
+  group: deploy-ticket-tool-impactx
   cancel-in-progress: false
 
 env:
-  AZURE_WEBAPP_NAME: ci-ticket-tool-impactx
+  AZURE_WEBAPP_NAME: ticket-tool-impactx
   REGISTRY: ghcr.io
   IMAGE_NAME: techxle/ticket-tool-impactx
-  NEXTAUTH_URL: ${{ vars.NEXTAUTH_URL || secrets.NEXTAUTH_URL || 'https://ci-ticket-tool-impactx.azurewebsites.net' }}
+  NEXTAUTH_URL: ${{ vars.NEXTAUTH_URL || secrets.NEXTAUTH_URL || 'https://ticket-tool-impactx.azurewebsites.net' }}
 
 jobs:
   build-and-deploy:
@@ -87,7 +87,7 @@ jobs:
 
       - name: Configure and deploy Azure Web App
         env:
-          AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP || secrets.AZURE_RESOURCE_GROUP }}
+          AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP || secrets.AZURE_RESOURCE_GROUP || 'rg-envora-ci' }}
           GHCR_USERNAME: ${{ github.actor }}
           GHCR_PAT: ${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ steps.source.outputs.sha }}
@@ -101,32 +101,31 @@ jobs:
           AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
         run: |
           set -euo pipefail
-          RG="${AZURE_RESOURCE_GROUP:-$(az webapp list --query "[?name=='$AZURE_WEBAPP_NAME'].resourceGroup | [0]" -o tsv)}"
-          if [[ -z "$RG" ]]; then
-            echo "Could not find Azure Web App '$AZURE_WEBAPP_NAME'. Set AZURE_RESOURCE_GROUP or verify AZURE_CREDENTIALS." >&2
-            exit 1
-          fi
-
+          RG="${AZURE_RESOURCE_GROUP:-rg-envora-ci}"
           echo "Configuring Azure Web App '$AZURE_WEBAPP_NAME' in resource group '$RG'..."
 
-          # Push all app runtime settings into Azure App Service
+          SETTINGS=(
+            "WEBSITES_PORT=3000"
+            "PORT=3000"
+            "NODE_ENV=production"
+            "WEBSITES_CONTAINER_START_TIME_LIMIT=600"
+            "DOCKER_ENABLE_CI=true"
+          )
+          [[ -n "${NEXTAUTH_URL:-}" ]] && SETTINGS+=("NEXTAUTH_URL=$NEXTAUTH_URL")
+          [[ -n "${DATABASE_URL:-}" ]] && SETTINGS+=("DATABASE_URL=$DATABASE_URL")
+          [[ -n "${DIRECT_URL:-}" ]] && SETTINGS+=("DIRECT_URL=$DIRECT_URL")
+          [[ -n "${JWT_SECRET:-}" ]] && SETTINGS+=("JWT_SECRET=$JWT_SECRET")
+          [[ -n "${NEXTAUTH_SECRET:-}" ]] && SETTINGS+=("NEXTAUTH_SECRET=$NEXTAUTH_SECRET")
+          [[ -n "${GROQ_API_KEY:-}" ]] && SETTINGS+=("GROQ_API_KEY=$GROQ_API_KEY")
+          [[ -n "${AZURE_AD_CLIENT_ID:-}" ]] && SETTINGS+=("AZURE_AD_CLIENT_ID=$AZURE_AD_CLIENT_ID")
+          [[ -n "${AZURE_AD_CLIENT_SECRET:-}" ]] && SETTINGS+=("AZURE_AD_CLIENT_SECRET=$AZURE_AD_CLIENT_SECRET")
+          [[ -n "${AZURE_AD_TENANT_ID:-}" ]] && SETTINGS+=("AZURE_AD_TENANT_ID=$AZURE_AD_TENANT_ID")
+
+          # Push app runtime settings into Azure App Service
           az webapp config appsettings set \
             --name "$AZURE_WEBAPP_NAME" \
             --resource-group "$RG" \
-            --settings \
-              WEBSITES_PORT=3000 \
-              PORT=3000 \
-              NODE_ENV=production \
-              WEBSITES_CONTAINER_START_TIME_LIMIT=600 \
-              "NEXTAUTH_URL=$NEXTAUTH_URL" \
-              "DATABASE_URL=$DATABASE_URL" \
-              "DIRECT_URL=$DIRECT_URL" \
-              "JWT_SECRET=$JWT_SECRET" \
-              "NEXTAUTH_SECRET=$NEXTAUTH_SECRET" \
-              "GROQ_API_KEY=$GROQ_API_KEY" \
-              "AZURE_AD_CLIENT_ID=$AZURE_AD_CLIENT_ID" \
-              "AZURE_AD_CLIENT_SECRET=$AZURE_AD_CLIENT_SECRET" \
-              "AZURE_AD_TENANT_ID=$AZURE_AD_TENANT_ID" \
+            --settings "${SETTINGS[@]}" \
             --output none
 
           # Point Azure App Service to the new GHCR container
