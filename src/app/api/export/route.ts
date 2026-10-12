@@ -405,7 +405,6 @@ Return your response as a valid JSON object with:
           <p class="ticket-label">Ticket ${escapeHtml(winner.ticketNumber)}</p>
           <h3>${escapeHtml(winnerVersion?.title || 'Untitled')}</h3>
           <p>${escapeHtml(winnerAssessment)}</p>
-          <div class="prize">Award · ₹3,000</div>
         </article>
         ${runnerUp ? `
         <article class="award-card silver">
@@ -415,7 +414,6 @@ Return your response as a valid JSON object with:
           <p class="ticket-label">Ticket ${escapeHtml(runnerUp.ticketNumber)}</p>
           <h3>${escapeHtml(runnerUpVersion?.title || 'Untitled')}</h3>
           <p>${escapeHtml(runnerUpAssessment)}</p>
-          <div class="prize">Award · ₹2,000</div>
         </article>
         ` : ''}
       </section>
