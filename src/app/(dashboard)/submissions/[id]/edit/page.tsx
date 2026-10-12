@@ -2,7 +2,7 @@ import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { redirect } from 'next/navigation';
 import SubmissionForm from '@/components/SubmissionForm';
-import Link from 'next/link';
+import Badge from '@/components/ui/Badge';
 
 export default async function EditSubmissionPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
@@ -44,15 +44,17 @@ export default async function EditSubmissionPage({ params }: { params: Promise<{
 
   return (
     <div className="space-y-6">
-
-
-      <header className="mb-6 flex justify-between items-center">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit Submission</h1>
-          <p className="text-gray-500 mt-1">Changes are saved as a new version. Previous versions remain preserved.</p>
+          <h1 className="text-2xl sm:text-[34px] font-bold text-[var(--text)] tracking-tight leading-tight">
+            Edit submission
+          </h1>
+          <p className="text-sm sm:text-base text-[var(--text-2)] mt-1 font-normal">
+            Changes are saved as a new version. Previous versions remain preserved.
+          </p>
         </div>
-        <div className="bg-indigo-50 border border-indigo-100 text-indigo-700 px-4 py-2 rounded-lg text-sm font-medium">
-          Currently editing <br/><span className="text-lg font-bold">Version {currentVersion.versionNumber}</span>
+        <div className="bg-[#dfe7f5]/80 border border-white/85 text-[var(--primary)] px-4 py-2 rounded-[16px] text-xs sm:text-sm font-semibold shadow-xs self-start sm:self-auto">
+          Currently editing <span className="font-extrabold text-[var(--text)]">Version {currentVersion.versionNumber}</span>
         </div>
       </header>
 
