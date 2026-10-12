@@ -14,7 +14,7 @@ export async function GET(request: Request) {
 
     const submissions = await prisma.submission.findMany({
       where: userIsAdmin ? undefined : { createdBy: userId },
-      orderBy: { updatedAt: 'desc' },
+      orderBy: { createdAt: 'desc' },
       include: {
         versions: {
           where: { isActive: true },

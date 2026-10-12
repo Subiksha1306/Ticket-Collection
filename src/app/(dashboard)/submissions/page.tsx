@@ -27,7 +27,7 @@ export default async function MySubmissionsPage(props: {
 
   let submissions = await prisma.submission.findMany({
     where: whereClause,
-    orderBy: { updatedAt: 'desc' },
+    orderBy: { createdAt: 'desc' },
     include: {
       author: true,
       versions: {
@@ -66,6 +66,7 @@ export default async function MySubmissionsPage(props: {
                 <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Submitted By</th>
               )}
               <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Version</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Created</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Last Updated</th>
               <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
             </tr>
@@ -73,7 +74,7 @@ export default async function MySubmissionsPage(props: {
           <tbody className="bg-white divide-y divide-gray-200">
             {submissions.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-gray-500 text-sm">
+                <td colSpan={userIsAdmin ? 7 : 6} className="px-6 py-8 text-center text-gray-500 text-sm">
                   No submissions found.
                 </td>
               </tr>
@@ -85,10 +86,14 @@ export default async function MySubmissionsPage(props: {
                 return (
                   <tr key={sub.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {sub.ticketNumber}
+                      <Link href={`/submissions/${sub.id}`} className="font-semibold text-gray-900 hover:text-[var(--primary)] hover:underline">
+                        {sub.ticketNumber}
+                      </Link>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-[250px]">
-                      {currentVersion.title}
+                      <Link href={`/submissions/${sub.id}`} className="text-gray-900 hover:text-[var(--primary)] hover:underline block truncate" title={currentVersion.title}>
+                        {currentVersion.title}
+                      </Link>
                     </td>
                     {userIsAdmin && (
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -97,6 +102,9 @@ export default async function MySubmissionsPage(props: {
                     )}
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       v{currentVersion.versionNumber} {currentVersion.isDraft && <span className="ml-2 px-2 py-0.5 rounded text-xs bg-amber-100 text-amber-700 font-medium border border-amber-200">Draft</span>}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(sub.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(sub.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}

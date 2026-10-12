@@ -15,6 +15,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Generate Prisma Client if schema exists
+RUN if [ -f "./prisma/schema.prisma" ] || [ -f "./schema.prisma" ]; then DIRECT_URL="postgresql://build:build@localhost:5432/build" npx prisma generate; fi
+
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV DIRECT_URL=postgresql://build:build@localhost:5432/build \
 	DATABASE_URL=postgresql://build:build@localhost:5432/build \

@@ -75,6 +75,7 @@ model Submission {
   
   status           String   @default("Submitted")
   score            Int?
+  scoreReason      String?  @map("score_reason") @db.Text
   category         String?
 
   author           User     @relation(fields: [createdBy], references: [id])

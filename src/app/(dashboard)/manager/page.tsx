@@ -2,7 +2,6 @@ import { getSession, isAdmin } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import ManagerMonthPicker from '@/components/ManagerMonthPicker';
-import RunScoringButton from '@/components/RunScoringButton';
 import { prisma } from '@/lib/db';
 
 export default async function ManagerDashboardPage({
@@ -127,7 +126,6 @@ export default async function ManagerDashboardPage({
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-3">
           <ManagerMonthPicker />
-          <RunScoringButton monthParam={monthParam || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`} />
           <a href={`/api/export?month=${monthParam || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`}`} className="px-4 py-2 bg-[#5B45FF] hover:bg-[#4a36d9] text-white rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm transition-colors">
             Export report
           </a>
