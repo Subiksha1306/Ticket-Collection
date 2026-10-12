@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 
 interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -23,3 +21,5 @@ export default function GlassCard({
     </Component>
   );
 }
+
+export { GlassCard };

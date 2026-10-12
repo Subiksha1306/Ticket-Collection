@@ -53,7 +53,7 @@ export default async function Dashboard() {
       key: 'title',
       header: 'TITLE',
       render: (sub) => {
-        const title = sub.versions[0]?.title || 'Untitled';
+        const title = sub.versions?.[0]?.title || 'Untitled';
         return (
           <Link
             href={`/submissions/${sub.id}`}
@@ -79,26 +79,38 @@ export default async function Dashboard() {
       header: 'VERSION',
       render: (sub) => (
         <Badge variant="version">
-          v{sub.versions[0]?.versionNumber || 1}
+          v{sub.versions?.[0]?.versionNumber || 1}
         </Badge>
       ),
     },
     {
       key: 'updatedAt',
       header: 'UPDATED',
-      render: (sub) => (
-        <span className="text-[var(--text-2)] whitespace-nowrap">
-          {new Date(sub.updatedAt).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-          })}
-        </span>
-      ),
+      render: (sub) => {
+        let dateStr = '—';
+        if (sub.updatedAt) {
+          try {
+            dateStr = new Date(sub.updatedAt).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            });
+          } catch {
+            dateStr = '—';
+          }
+        }
+        return (
+          <span className="text-[var(--text-2)] whitespace-nowrap">
+            {dateStr}
+          </span>
+        );
+      },
     },
   ];
 
-  const firstName = session.user?.name?.split(' ')[0] || session.user?.name || 'User';
+  const firstName = session.user?.name
+    ? session.user.name.split(' ')[0]
+    : (session.user?.email ? session.user.email.split('@')[0] : 'User');
 
   return (
     <div className="space-y-6">

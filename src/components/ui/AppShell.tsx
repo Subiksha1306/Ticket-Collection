@@ -11,89 +11,84 @@ interface AppShellProps {
   children: React.ReactNode;
 }
 
-export const AppShell: React.FC<AppShellProps> = ({
-  userName = 'User',
-  userEmail,
-  isAdmin = false,
-  children,
-}) => {
-  const pathname = usePathname();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+interface NavItem {
+  name: string;
+  href: string;
+  icon: string;
+}
 
-  const mainNav = [
-    { name: 'Home', href: '/', icon: 'home' },
-    { name: isAdmin ? 'All submissions' : 'My submissions', href: '/submissions', icon: 'folder' },
-    ...(isAdmin ? [{ name: 'Manager dashboard', href: '/manager', icon: 'chart' }] : []),
-    { name: 'Awards and summary', href: '/awards', icon: 'star' },
-    ...(isAdmin ? [{ name: 'Admin', href: '/admin', icon: 'settings' }] : []),
-  ];
+function renderNavIcon(type: string) {
+  switch (type) {
+    case 'home':
+      return (
+        <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+      );
+    case 'folder':
+      return (
+        <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+        </svg>
+      );
+    case 'chart':
+      return (
+        <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+      );
+    case 'star':
+      return (
+        <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+        </svg>
+      );
+    case 'settings':
+      return (
+        <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <circle cx="12" cy="12" r="3" strokeWidth={1.75} />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
+        </svg>
+      );
+    case 'new':
+      return (
+        <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      );
+    case 'drafts':
+      return (
+        <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
 
-  const workspaceNav = [
-    { name: 'New submission', href: '/submissions/new', icon: 'new' },
-    { name: 'Drafts', href: '/drafts', icon: 'drafts' },
-  ];
+interface SidebarViewProps {
+  mainNav: NavItem[];
+  workspaceNav: NavItem[];
+  pathname: string;
+  onNavigate?: () => void;
+  userName: string;
+  initial: string;
+}
 
-  const renderIcon = (type: string) => {
-    switch (type) {
-      case 'home':
-        return (
-          <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-          </svg>
-        );
-      case 'folder':
-        return (
-          <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-          </svg>
-        );
-      case 'chart':
-        return (
-          <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
-        );
-      case 'star':
-        return (
-          <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-          </svg>
-        );
-      case 'settings':
-        return (
-          <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <circle cx="12" cy="12" r="3" strokeWidth={1.75} />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
-          </svg>
-        );
-      case 'new':
-        return (
-          <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-        );
-      case 'drafts':
-        return (
-          <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-          </svg>
-        );
-      default:
-        return null;
-    }
-  };
-
-  const handleSignOut = async () => {
-    await signOut({ callbackUrl: '/login' });
-  };
-
-  const initial = (userName?.charAt(0) || 'U').toUpperCase();
-
-  const SidebarContent = () => (
+function SidebarView({
+  mainNav,
+  workspaceNav,
+  pathname,
+  onNavigate,
+  userName,
+  initial,
+}: SidebarViewProps) {
+  return (
     <div className="flex flex-col h-full">
       {/* Brand Logo */}
       <div className="pt-2 pb-6 px-3">
-        <Link href="/" className="inline-flex items-center gap-2 group">
+        <Link href="/" onClick={onNavigate} className="inline-flex items-center gap-2 group">
           <img
             src="/logo.png"
             alt="ImpactX"
@@ -116,14 +111,14 @@ export const AppShell: React.FC<AppShellProps> = ({
             <Link
               key={item.name}
               href={item.href}
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={onNavigate}
               className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-[14px] text-sm font-medium transition-all ${
                 isActive
                   ? 'bg-[var(--primary)] text-white font-semibold shadow-[0_4px_14px_rgba(61,90,140,0.25)]'
                   : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-white/50'
               }`}
             >
-              {renderIcon(item.icon)}
+              {renderNavIcon(item.icon)}
               <span>{item.name}</span>
             </Link>
           );
@@ -141,14 +136,14 @@ export const AppShell: React.FC<AppShellProps> = ({
                 <Link
                   key={item.name}
                   href={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={onNavigate}
                   className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-[14px] text-sm font-medium transition-all ${
                     isActive
                       ? 'bg-[var(--primary)] text-white font-semibold shadow-[0_4px_14px_rgba(61,90,140,0.25)]'
                       : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-white/50'
                   }`}
                 >
-                  {renderIcon(item.icon)}
+                  {renderNavIcon(item.icon)}
                   <span>{item.name}</span>
                 </Link>
               );
@@ -175,6 +170,36 @@ export const AppShell: React.FC<AppShellProps> = ({
       </div>
     </div>
   );
+}
+
+export const AppShell: React.FC<AppShellProps> = ({
+  userName = 'User',
+  userEmail,
+  isAdmin = false,
+  children,
+}) => {
+  const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const mainNav: NavItem[] = [
+    { name: 'Home', href: '/', icon: 'home' },
+    { name: isAdmin ? 'All submissions' : 'My submissions', href: '/submissions', icon: 'folder' },
+    ...(isAdmin ? [{ name: 'Manager dashboard', href: '/manager', icon: 'chart' }] : []),
+    { name: 'Awards and summary', href: '/awards', icon: 'star' },
+    ...(isAdmin ? [{ name: 'Admin', href: '/admin', icon: 'settings' }] : []),
+  ];
+
+  const workspaceNav: NavItem[] = [
+    { name: 'New submission', href: '/submissions/new', icon: 'new' },
+    { name: 'Drafts', href: '/drafts', icon: 'drafts' },
+  ];
+
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: '/login' });
+  };
+
+  const displayName = userName || (userEmail ? userEmail.split('@')[0] : 'User');
+  const initial = (displayName.charAt(0) || 'U').toUpperCase();
 
   return (
     <div className="min-h-screen bg-[var(--bg)] relative overflow-x-hidden text-[var(--text)] font-sans antialiased selection:bg-[var(--primary)] selection:text-white">
@@ -194,7 +219,13 @@ export const AppShell: React.FC<AppShellProps> = ({
             WebkitBackdropFilter: 'blur(18px)',
           }}
         >
-          <SidebarContent />
+          <SidebarView
+            mainNav={mainNav}
+            workspaceNav={workspaceNav}
+            pathname={pathname}
+            userName={displayName}
+            initial={initial}
+          />
         </aside>
 
         {/* Mobile Sidebar Overlay Drawer */}
@@ -218,7 +249,14 @@ export const AppShell: React.FC<AppShellProps> = ({
                   </svg>
                 </button>
               </div>
-              <SidebarContent />
+              <SidebarView
+                mainNav={mainNav}
+                workspaceNav={workspaceNav}
+                pathname={pathname}
+                onNavigate={() => setMobileMenuOpen(false)}
+                userName={displayName}
+                initial={initial}
+              />
             </div>
           </div>
         )}

@@ -96,7 +96,7 @@ export function DataTable<T>({
               return (
                 <tr
                   key={key}
-                  onClick={() => onRowClick && onRowClick(item)}
+                  {...(onRowClick ? { onClick: () => onRowClick(item) } : {})}
                   className={`bg-white/55 hover:bg-white/85 transition-all shadow-[0_2px_8px_rgba(44,66,110,0.02)] ${
                     isClickable ? 'cursor-pointer hover:shadow-[0_4px_16px_rgba(44,66,110,0.06)]' : ''
                   }`}
