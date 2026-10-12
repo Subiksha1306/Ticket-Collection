@@ -1,6 +1,5 @@
 'use client';
 import React from 'react';
-import { Trophy, Medal } from 'lucide-react';
 
 export default function WinnersBanner({ text }: { text: string }) {
   if (!text) return null;
@@ -12,7 +11,7 @@ export default function WinnersBanner({ text }: { text: string }) {
   const regex = /^(?:(.*?(?:!|:))\s*)?(.*?)\s*Winner:\s*([\s\S]*?)(?:,?\s*Runner-up:\s*(.*)|$)/i;
   const match = cleanText.match(regex);
 
-  let leadIn = "Congratulations to our ImpactX winners!";
+  let leadIn = "Congratulations to our ImpactX winners";
   let monthLabel = "Winner";
   let winner = "";
   let runnerUp = "";
@@ -20,41 +19,34 @@ export default function WinnersBanner({ text }: { text: string }) {
 
   if (match && match[3]) {
     isParsed = true;
-    leadIn = match[1] ? match[1].trim() : leadIn;
-    monthLabel = match[2] ? `${match[2].trim()} Winner` : 'Winner';
+    leadIn = match[1] ? match[1].replace(/[:!]/g, '').trim() : leadIn;
+    monthLabel = match[2] ? `${match[2].trim()} winner` : 'Winner';
     winner = match[3].trim();
     runnerUp = match[4] ? match[4].trim() : '';
   } else {
-    // If it doesn't match the standard format, just use the clean string
     winner = cleanText;
   }
 
-  const Dot = () => <div className="w-1 h-1 rounded-full bg-[rgba(255,255,255,0.35)] shrink-0" />;
+  const Dot = () => <span className="text-white/40 mx-2.5 font-bold select-none">·</span>;
 
   const ItemContent = () => (
-    <div className="flex items-center gap-3 sm:gap-4 whitespace-nowrap text-[13px] sm:text-[14px]">
+    <div className="flex items-center whitespace-nowrap text-xs sm:text-sm">
       {isParsed ? (
         <>
-          {leadIn && <span className="font-normal text-[rgba(255,255,255,0.65)]">{leadIn}</span>}
+          {leadIn && <span className="font-normal text-white/85">{leadIn}</span>}
           {leadIn && <Dot />}
-          <span className="font-normal text-[rgba(255,255,255,0.65)]">{monthLabel}</span>
-          <div className="flex items-center gap-1.5">
-            <Trophy className="w-[16px] h-[16px] text-[#F5C451] shrink-0" />
-            <span className="font-semibold text-white tracking-[0.01em]">{winner}</span>
-          </div>
+          <span className="font-normal text-white/85">{monthLabel}</span>
+          <span className="font-bold text-white ml-1.5">{winner}</span>
           {runnerUp && (
             <>
               <Dot />
-              <span className="font-normal text-[rgba(255,255,255,0.65)]">Runner-up</span>
-              <div className="flex items-center gap-1.5">
-                <Medal className="w-[16px] h-[16px] text-[#C9D1DB] shrink-0" />
-                <span className="font-semibold text-white tracking-[0.01em]">{runnerUp}</span>
-              </div>
+              <span className="font-normal text-white/85">Runner-up</span>
+              <span className="font-bold text-white ml-1.5">{runnerUp}</span>
             </>
           )}
         </>
       ) : (
-        <span className="font-semibold text-white tracking-[0.01em]">{winner}</span>
+        <span className="font-medium text-white tracking-wide">{winner}</span>
       )}
     </div>
   );
@@ -77,11 +69,11 @@ export default function WinnersBanner({ text }: { text: string }) {
         }
       `}} />
       <div 
-        className="w-full rounded-[12px] py-[10px] sm:py-[12px] overflow-hidden flex items-center relative group"
+        className="w-full rounded-full py-2.5 sm:py-3 px-6 overflow-hidden flex items-center relative group backdrop-blur-[16px]"
         style={{
-          background: 'linear-gradient(90deg, #1b1f4b 0%, #2d2a7a 100%)',
-          border: '1px solid rgba(255,255,255,0.12)',
-          boxShadow: '0 6px 20px rgba(30,27,90,0.25)',
+          background: 'rgba(36, 54, 94, 0.88)',
+          border: '1px solid rgba(255, 255, 255, 0.15)',
+          boxShadow: '0 6px 20px rgba(36, 54, 94, 0.25)',
         }}
         role="region"
         aria-label="ImpactX winners announcement"
@@ -89,8 +81,8 @@ export default function WinnersBanner({ text }: { text: string }) {
         <div 
           className="w-full flex items-center overflow-hidden"
           style={{
-            WebkitMaskImage: 'linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent)',
-            maskImage: 'linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent)',
+            WebkitMaskImage: 'linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent)',
+            maskImage: 'linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent)',
           }}
         >
           <div className="flex w-max animate-custom-marquee group-hover:[animation-play-state:paused] focus-within:[animation-play-state:paused] motion-reduce:w-full motion-reduce:justify-center motion-reduce:overflow-hidden motion-reduce:text-ellipsis">
