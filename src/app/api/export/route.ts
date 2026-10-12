@@ -1,6 +1,78 @@
 import { NextResponse } from 'next/server';
 import { getSession, isAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import Groq from 'groq-sdk';
+
+const RUBRIC = `### Scoring rubric
+ 
+| Criterion | Maximum | Evaluation question |
+|---|---:|---|
+| Innovation | 20 | Is the idea original or a meaningful improvement over the previous approach? |
+| Business impact | 25 | Does it improve efficiency, accuracy, security, reliability, cost, or user experience? |
+| Implementation | 20 | Was the idea actually implemented and completed? |
+| Evidence and validation | 15 | Does the ticket document testing, results, scenarios, or measurable evidence? |
+| Scalability | 10 | Can the solution be reused, extended, or applied across multiple processes or teams? |
+| Clarity and ownership | 10 | Does the submission clearly explain the problem, actions, difficulties, and result? |
+| **Total** | **100** |  |
+ 
+### Scoring principles
+ 
+- Score only the evidence written in the submission.
+- Do not assume unreported savings, adoption, or production results.
+- Give lower implementation scores to research-only or proposed ideas.
+- Reward reusable solutions and prevention of recurring problems.
+- Reward specific testing and measurable scope.
+- Apply the same standard to every employee.
+- Document why each score was awarded.
+- Treat joint tickets consistently with the portal's submitted-by owner unless the award committee confirms shared ownership.`;
+
+const STYLES = `*{box-sizing:border-box}body{margin:0;background:#f3f4f6;color:#111827;font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:32px 20px 60px}
+header{background:#141a2e;color:#fff;border-radius:16px;padding:28px 32px;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+header h1{margin:0;font-size:28px;letter-spacing:-.3px}header p{margin:4px 0 0;color:#a5b0cf}
+.brand{font-weight:700;font-size:14px;color:#a5b4fc;letter-spacing:.5px;margin-bottom:6px}
+.pill{background:#4f46e5;border-radius:10px;padding:8px 14px;font-weight:600;font-size:14px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin:20px 0}
+.k{background:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.k .l{font-size:13px;color:#6b7280}.k .v{font-size:30px;font-weight:700;margin-top:2px}.k .s{font-size:12px;color:#6b7280}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+@media(max-width:800px){.row{grid-template-columns:1fr}}
+.card{background:#fff;border-radius:14px;padding:20px 22px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.card h2{font-size:16px;margin:0 0 16px}
+.pipe{display:flex;justify-content:space-between;gap:8px}.pi{text-align:center;flex:1}
+.ic{width:56px;height:56px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700}
+.pl{font-size:12px;color:#4b5563}
+.br{display:grid;grid-template-columns:150px 1fr 30px;gap:10px;align-items:center;margin:9px 0;font-size:13px}.br b{text-align:right}.muted{color:#6b7280}
+.tr{background:#eef0f6;border-radius:6px;height:14px;overflow:hidden}.tr.sm{height:10px}.fl{background:#6366f1;height:100%;border-radius:6px}
+.cols{display:flex;align-items:flex-end;justify-content:space-around;height:140px}.col{text-align:center;flex:1}
+.cb{background:#6366f1;border-radius:6px 6px 0 0;margin:0 auto;width:42px}.cv{font-size:13px;font-weight:600}.cl{font-size:12px;color:#6b7280;margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;color:#6b7280;font-weight:500;padding:6px 8px;border-bottom:1px solid #e5e7eb}td{padding:8px;border-bottom:1px solid #f1f2f6}.num{text-align:right;width:56px}
+.ctrl{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:26px 0 14px}
+.ctrl input{flex:1;min-width:220px;padding:10px 14px;border:1px solid #d1d5db;border-radius:10px;font-size:14px;background:#fff}
+.btn,.fc{border:1px solid #d1d5db;background:#fff;border-radius:999px;padding:7px 13px;font-size:13px;cursor:pointer}.fc.on{background:#141a2e;color:#fff;border-color:#141a2e}
+.btn{border-radius:10px}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px}
+.grp h3{display:flex;align-items:center;font-size:17px;margin:26px 0 10px}.cnt{margin-left:10px;background:#e5e7eb;border-radius:999px;font-size:12px;padding:1px 9px}
+.tk{background:#fff;border-radius:12px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.tk summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:110px 1fr 190px 70px 16px;gap:12px;align-items:center;padding:13px 16px}
+.tk summary::-webkit-details-marker{display:none}
+@media(max-width:800px){.tk summary{grid-template-columns:70px 1fr 56px 14px}.who{display:none}}
+.tn{font-weight:700;font-size:13px;color:#4338ca;word-break:break-word}.tt{font-weight:500}.who{color:#6b7280;font-size:13px}
+.score{background:#eef2ff;color:#4338ca;font-weight:700;border-radius:8px;padding:2px 0;text-align:center;font-size:13px}.score.un{background:#f3f4f6;color:#9ca3af;font-weight:500;font-size:11px}
+.car{width:8px;height:8px;border-right:2px solid #9ca3af;border-bottom:2px solid #9ca3af;transform:rotate(45deg);transition:.15s}details[open] .car{transform:rotate(-135deg)}
+.body{padding:2px 20px 18px;border-top:1px solid #f1f2f6;font-size:14px;color:#1f2937}.body p{margin:10px 0}.body ul,.body ol{margin:8px 0;padding-left:22px}
+.body code{background:#f3f4f6;padding:1px 5px;border-radius:4px;font-size:13px}
+.meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0 4px}.chip{background:#eef2ff;color:#4338ca;border-radius:999px;padding:2px 10px;font-size:12px}.chip.ver{background:#f3f4f6;color:#4b5563}.d{font-size:12px;color:#6b7280}
+.empty{display:none;text-align:center;color:#6b7280;padding:30px}
+footer{text-align:center;color:#9ca3af;font-size:12px;margin-top:36px}
+@media print{body{background:#fff}.ctrl{display:none}.tk .body{display:block}details:not([open]) .body{display:block}.card,.k,.tk{box-shadow:none;border:1px solid #e5e7eb}header{-webkit-print-color-adjust:exact;print-color-adjust:exact}}`;
+
+const SCRIPTS = `var q=document.getElementById('q'),act=null,tks=[].slice.call(document.querySelectorAll('.tk')),grps=[].slice.call(document.querySelectorAll('.grp'));
+function run(){var t=q.value.trim().toLowerCase(),n=0;tks.forEach(function(k){var g=k.parentNode.getAttribute('data-g');var ok=(!act||g===act)&&(!t||k.getAttribute('data-s').indexOf(t)>-1);k.style.display=ok?'':'none';if(ok)n++;});
+grps.forEach(function(g){g.style.display=[].some.call(g.querySelectorAll('.tk'),function(k){return k.style.display!=='none'})?'':'none'});document.getElementById('empty').style.display=n?'none':'block'}
+q.addEventListener('input',run);
+[].forEach.call(document.querySelectorAll('.fc'),function(b){b.addEventListener('click',function(){var f=b.getAttribute('data-f');act=act===f?null:f;[].forEach.call(document.querySelectorAll('.fc'),function(x){x.classList.toggle('on',x.getAttribute('data-f')===act)});run()})});
+document.getElementById('ex').onclick=function(){tks.forEach(function(k){if(k.style.display!=='none')k.open=true})};
+document.getElementById('co').onclick=function(){tks.forEach(function(k){k.open=false})};`;
 
 export async function GET(request: Request) {
   try {
@@ -13,7 +85,7 @@ export async function GET(request: Request) {
     const monthParam = searchParams.get('month'); // Format: YYYY-MM
     const allParam = searchParams.get('all'); // true
 
-    let whereClause = {};
+    let whereClause: any = {};
     let filename = 'impactx-export-all.html';
     let displayMonth = 'All Time';
     let dateRangeText = 'All submissions';
@@ -21,7 +93,7 @@ export async function GET(request: Request) {
     if (!allParam && monthParam) {
       const [yearStr, monthStr] = monthParam.split('-');
       const year = parseInt(yearStr);
-      const month = parseInt(monthStr) - 1; // 0-indexed for Date
+      const month = parseInt(monthStr) - 1;
 
       const startDate = new Date(year, month, 1);
       const endDate = new Date(year, month + 1, 0, 23, 59, 59, 999);
@@ -33,10 +105,9 @@ export async function GET(request: Request) {
       };
       filename = `impactx-export-${monthParam}.html`;
       displayMonth = new Date(year, month, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-      dateRangeText = `Submissions created ${startDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} – ${endDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
     }
 
-    const submissions = await prisma.submission.findMany({
+    let submissions = await prisma.submission.findMany({
       where: whereClause,
       include: {
         author: true,
@@ -47,6 +118,66 @@ export async function GET(request: Request) {
       },
       orderBy: { createdAt: 'desc' }
     });
+
+    // Auto-score any unscored submissions on the fly if needed
+    const unscored = submissions.filter(s => s.score === null);
+    if (unscored.length > 0 && process.env.GROQ_API_KEY) {
+      try {
+        const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+        for (const sub of unscored) {
+          const v = sub.versions[0];
+          if (!v) continue;
+
+          const prompt = `You are an expert evaluator scoring a submission for an internal company awards program.
+Evaluate the following submission using the exact rubric and principles provided.
+
+${RUBRIC}
+
+Here is the submission:
+Ticket: ${sub.ticketNumber}
+Title: ${v.title}
+Category: ${sub.category || 'None'}
+Content: ${v.description}
+
+Evaluate the submission and provide the final score out of 100.
+You must return your response as a JSON object containing exactly two fields:
+- "reasoning": A brief explanation of how the score was awarded based on each criterion.
+- "score": The final integer score out of 100 (between 0 and 100).`;
+
+          try {
+            const completion = await groq.chat.completions.create({
+              messages: [{ role: 'user', content: prompt }],
+              model: 'openai/gpt-oss-120b',
+              response_format: { type: 'json_object' },
+            });
+            const content = completion.choices[0]?.message?.content;
+            if (content) {
+              const parsed = JSON.parse(content);
+              if (typeof parsed.score === 'number') {
+                await prisma.submission.update({
+                  where: { id: sub.id },
+                  data: { score: parsed.score }
+                });
+                sub.score = parsed.score;
+              }
+            }
+          } catch (e) {
+            console.error(`Error auto-scoring ${sub.ticketNumber}:`, e);
+          }
+        }
+      } catch (err) {
+        console.error('Auto-scoring initialization error:', err);
+      }
+    }
+
+    if (submissions.length > 0) {
+      const dates = submissions.map(s => new Date(s.createdAt).getTime());
+      const minDate = new Date(Math.min(...dates));
+      const maxDate = new Date(Math.max(...dates));
+      const startStr = minDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+      const endStr = maxDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      dateRangeText = `Submissions created ${startStr} – ${endStr}`;
+    }
 
     // 1. Group by Author for the Contributors Table
     const authorsMap = new Map();
@@ -60,26 +191,27 @@ export async function GET(request: Request) {
       if (sub.score !== null) {
         data.totalScore += sub.score;
         data.scoredCount++;
-        if (sub.score >= 90) data.advanced++;
+        if (sub.score >= 80) data.advanced++;
       }
     });
 
-    let maxTickets = 0;
+    let maxTickets = 1;
+    authorsMap.forEach(v => {
+      if (v.tickets > maxTickets) maxTickets = v.tickets;
+    });
+
     const contributors = Array.from(authorsMap.values())
-      .map(a => {
-        if (a.tickets > maxTickets) maxTickets = a.tickets;
-        return {
-          name: a.name,
-          tickets: a.tickets,
-          advanced: a.advanced,
-          avgScore: a.scoredCount > 0 ? Math.round(a.totalScore / a.scoredCount) : 0
-        };
-      })
+      .map(a => ({
+        name: a.name,
+        tickets: a.tickets,
+        advanced: a.advanced,
+        avgScore: a.scoredCount > 0 ? Math.round(a.totalScore / a.scoredCount) : 0
+      }))
       .sort((a, b) => b.tickets - a.tickets || b.avgScore - a.avgScore);
 
     // 2. Group by Status
     const statusOrder = ["Impact Verified", "Implemented", "Approved", "Under Review", "Submitted"];
-    const statusColors = {
+    const statusColors: Record<string, string> = {
       "Impact Verified": "#7c3aed",
       "Implemented": "#059669",
       "Approved": "#2563eb",
@@ -87,7 +219,7 @@ export async function GET(request: Request) {
       "Submitted": "#64748b"
     };
 
-    const statusGroups = {
+    const statusGroups: Record<string, any[]> = {
       "Impact Verified": [],
       "Implemented": [],
       "Approved": [],
@@ -100,14 +232,14 @@ export async function GET(request: Request) {
       statusGroups[s].push(sub);
     });
 
-    let htmlContent = `<!DOCTYPE html>
+    const htmlContent = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ImpactX Report – ${displayMonth}</title>
 <style>
-${CSS_PLACEHOLDER}
+${STYLES}
 </style>
 </head>
 <body>
@@ -130,7 +262,7 @@ ${CSS_PLACEHOLDER}
         <td><div class="tr sm"><div class="fl" style="width:${Math.round((c.tickets / maxTickets) * 100)}%"></div></div></td>
         <td class="num">${c.tickets.toFixed(1)}</td>
         <td class="num">${c.advanced}</td>
-        <td class="num">${c.avgScore || '-'}</td>
+        <td class="num">${c.avgScore ? c.avgScore : '-'}</td>
       </tr>`).join('')}
     </table>
   </div>
@@ -186,67 +318,20 @@ ${CSS_PLACEHOLDER}
 </div>
 
 <script>
-${JS_PLACEHOLDER}
+${SCRIPTS}
 </script>
 </body>
 </html>`;
 
-    htmlContent = htmlContent.replace('${CSS_PLACEHOLDER}', `*{box-sizing:border-box}body{margin:0;background:#f3f4f6;color:#111827;font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-.wrap{max-width:1100px;margin:0 auto;padding:32px 20px 60px}
-header{background:#141a2e;color:#fff;border-radius:16px;padding:28px 32px;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
-header h1{margin:0;font-size:28px;letter-spacing:-.3px}header p{margin:4px 0 0;color:#a5b0cf}
-.brand{font-weight:700;font-size:14px;color:#a5b4fc;letter-spacing:.5px;margin-bottom:6px}
-.pill{background:#4f46e5;border-radius:10px;padding:8px 14px;font-weight:600;font-size:14px}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin:20px 0}
-.k{background:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
-.k .l{font-size:13px;color:#6b7280}.k .v{font-size:30px;font-weight:700;margin-top:2px}.k .s{font-size:12px;color:#6b7280}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
-@media(max-width:800px){.row{grid-template-columns:1fr}}
-.card{background:#fff;border-radius:14px;padding:20px 22px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
-.card h2{font-size:16px;margin:0 0 16px}
-.pipe{display:flex;justify-content:space-between;gap:8px}.pi{text-align:center;flex:1}
-.ic{width:56px;height:56px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700}
-.pl{font-size:12px;color:#4b5563}
-.br{display:grid;grid-template-columns:150px 1fr 30px;gap:10px;align-items:center;margin:9px 0;font-size:13px}.br b{text-align:right}.muted{color:#6b7280}
-.tr{background:#eef0f6;border-radius:6px;height:14px;overflow:hidden}.tr.sm{height:10px}.fl{background:#6366f1;height:100%;border-radius:6px}
-.cols{display:flex;align-items:flex-end;justify-content:space-around;height:140px}.col{text-align:center;flex:1}
-.cb{background:#6366f1;border-radius:6px 6px 0 0;margin:0 auto;width:42px}.cv{font-size:13px;font-weight:600}.cl{font-size:12px;color:#6b7280;margin-top:4px}
-table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;color:#6b7280;font-weight:500;padding:6px 8px;border-bottom:1px solid #e5e7eb}td{padding:8px;border-bottom:1px solid #f1f2f6}.num{text-align:right;width:56px}
-.ctrl{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:26px 0 14px}
-.ctrl input{flex:1;min-width:220px;padding:10px 14px;border:1px solid #d1d5db;border-radius:10px;font-size:14px;background:#fff}
-.btn,.fc{border:1px solid #d1d5db;background:#fff;border-radius:999px;padding:7px 13px;font-size:13px;cursor:pointer}.fc.on{background:#141a2e;color:#fff;border-color:#141a2e}
-.btn{border-radius:10px}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px}
-.grp h3{display:flex;align-items:center;font-size:17px;margin:26px 0 10px}.cnt{margin-left:10px;background:#e5e7eb;border-radius:999px;font-size:12px;padding:1px 9px}
-.tk{background:#fff;border-radius:12px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
-.tk summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:110px 1fr 190px 70px 16px;gap:12px;align-items:center;padding:13px 16px}
-.tk summary::-webkit-details-marker{display:none}
-@media(max-width:800px){.tk summary{grid-template-columns:70px 1fr 56px 14px}.who{display:none}}
-.tn{font-weight:700;font-size:13px;color:#4338ca;word-break:break-word}.tt{font-weight:500}.who{color:#6b7280;font-size:13px}
-.score{background:#eef2ff;color:#4338ca;font-weight:700;border-radius:8px;padding:2px 0;text-align:center;font-size:13px}.score.un{background:#f3f4f6;color:#9ca3af;font-weight:500;font-size:11px}
-.car{width:8px;height:8px;border-right:2px solid #9ca3af;border-bottom:2px solid #9ca3af;transform:rotate(45deg);transition:.15s}details[open] .car{transform:rotate(-135deg)}
-.body{padding:2px 20px 18px;border-top:1px solid #f1f2f6;font-size:14px;color:#1f2937}.body p{margin:10px 0}.body ul,.body ol{margin:8px 0;padding-left:22px}
-.body code{background:#f3f4f6;padding:1px 5px;border-radius:4px;font-size:13px}
-.meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0 4px}.chip{background:#eef2ff;color:#4338ca;border-radius:999px;padding:2px 10px;font-size:12px}.chip.ver{background:#f3f4f6;color:#4b5563}.d{font-size:12px;color:#6b7280}
-.empty{display:none;text-align:center;color:#6b7280;padding:30px}
-footer{text-align:center;color:#9ca3af;font-size:12px;margin-top:36px}
-@media print{body{background:#fff}.ctrl{display:none}.tk .body{display:block}details:not([open]) .body{display:block}.card,.k,.tk{box-shadow:none;border:1px solid #e5e7eb}header{-webkit-print-color-adjust:exact;print-color-adjust:exact}}`);
-    htmlContent = htmlContent.replace('${JS_PLACEHOLDER}', `var q=document.getElementById('q'),act=null,tks=[].slice.call(document.querySelectorAll('.tk')),grps=[].slice.call(document.querySelectorAll('.grp'));
-function run(){var t=q.value.trim().toLowerCase(),n=0;tks.forEach(function(k){var g=k.parentNode.getAttribute('data-g');var ok=(!act||g===act)&&(!t||k.getAttribute('data-s').indexOf(t)>-1);k.style.display=ok?'':'none';if(ok)n++;});
-grps.forEach(function(g){g.style.display=[].some.call(g.querySelectorAll('.tk'),function(k){return k.style.display!=='none'})?'':'none'});document.getElementById('empty').style.display=n?'none':'block'}
-q.addEventListener('input',run);
-[].forEach.call(document.querySelectorAll('.fc'),function(b){b.addEventListener('click',function(){var f=b.getAttribute('data-f');act=act===f?null:f;[].forEach.call(document.querySelectorAll('.fc'),function(x){x.classList.toggle('on',x.getAttribute('data-f')===act)});run()})});
-document.getElementById('ex').onclick=function(){tks.forEach(function(k){if(k.style.display!=='none')k.open=true})};
-document.getElementById('co').onclick=function(){tks.forEach(function(k){k.open=false})};`);
-
     return new NextResponse(htmlContent, {
       headers: {
-        'Content-Type': 'text/html',
+        'Content-Type': 'text/html; charset=utf-8',
         'Content-Disposition': `attachment; filename="${filename}"`,
       }
     });
 
   } catch (error: any) {
     console.error('Export error:', error);
-    return new NextResponse(`Internal Server Error: ${error.message || error.toString()}`, { status: 500 });
+    return new NextResponse(`Internal Server Error: ${error?.message || error?.toString()}`, { status: 500 });
   }
 }
