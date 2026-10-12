@@ -1,0 +1,171 @@
+name: Deploy uat-ticket-tool-impactx to Elastic Beanstalk — UAT
+
+# ── Secret configuration guide ────────────────────────────────────────────────
+# Repository secrets  (Settings → Secrets and variables → Actions → Repository)
+#   AWS_ACCESS_KEY_ID        — IAM user access key
+#                              (needs Elastic Beanstalk permissions + S3 write)
+#   AWS_SECRET_ACCESS_KEY    — IAM user secret key
+#
+# Environment secrets  (Settings → Environments → <name> → Secrets and variables)
+#   AWS_REGION               — AWS region  (e.g. us-east-1)
+#   EB_APPLICATION_NAME      — Elastic Beanstalk application name
+#   EB_ENVIRONMENT_NAME      — EB environment name for this deploy target
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# ── Stack: React / Vue / Angular (Vite) — Static SPA ──────────────────────────
+# Builds the frontend in CI, then deploys a clean bundle containing only
+# the dist/ folder + a tiny Express static server to Elastic Beanstalk.
+# EB platform: Node.js (Amazon Linux 2023)
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch or tag to deploy to Test / QA'
+        required: false
+        default: 'main'
+
+env:
+  AWS_REGION:      ${{ secrets.AWS_REGION || 'us-east-1' }}
+  NODE_VERSION:    '20.x'
+  EB_APP_NAME:     ${{ secrets.EB_APPLICATION_NAME || 'uat' }}
+  EB_ENV_NAME:     ${{ secrets.EB_ENVIRONMENT_NAME || 'uat-ticket-tool-impactx' }}
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy to Elastic Beanstalk
+    runs-on: ubuntu-latest
+    environment: uat
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.ref || github.ref }}
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Build
+        run: npm run build --if-present
+
+      - name: Run tests
+        run: npm test --if-present
+
+      # ── Package the artefact ──────────────────────────────────────────────
+      # For React/Vite SPAs we create a CLEAN deployment bundle containing
+      # only the built assets + a tiny Express static server.  EB's
+      # npm install only needs to install 'express' — no peer-dep or native-
+      # binary issues from the full project.
+      - name: Create deployment package
+        run: |
+          rm -rf deploy_bundle && mkdir deploy_bundle
+
+          # Copy the built frontend assets
+          if [ -d dist ]; then
+            echo ">>> Frontend build detected (dist/ folder)"
+            cp -r dist deploy_bundle/dist
+          elif [ -d build ]; then
+            echo ">>> Frontend build detected (build/ folder)"
+            cp -r build deploy_bundle/dist
+          else
+            echo "::error::No dist/ or build/ folder found. Did 'npm run build' succeed?"
+            exit 1
+          fi
+
+          # Minimal package.json — EB only needs to install 'express'
+          cat > deploy_bundle/package.json << 'PKGJSON'
+          {
+            "name": "eb-app",
+            "version": "1.0.0",
+            "private": true,
+            "engines": { "node": ">=18" },
+            "scripts": { "start": "node server.js" },
+            "dependencies": { "express": "^4.21.0" }
+          }
+          PKGJSON
+
+          # Static file server for the SPA
+          cat > deploy_bundle/server.js << 'SRVEOF'
+          const express = require('express');
+          const path = require('path');
+          const app = express();
+          const PORT = process.env.PORT || 8080;
+          app.use(express.static(path.join(__dirname, 'dist')));
+          app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'dist', 'index.html')));
+          app.listen(PORT, () => console.log('Listening on ' + PORT));
+          SRVEOF
+
+          # Procfile tells EB exactly how to start the app
+          echo "web: node server.js" > deploy_bundle/Procfile
+
+          # Zip ONLY the clean bundle
+          cd deploy_bundle && zip -r ../deploy.zip . && cd ..
+
+          echo "=== deploy.zip contents ==="
+          zipinfo -1 deploy.zip
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ env.AWS_REGION }}
+
+      - name: Push environment variables to Elastic Beanstalk
+        run: |
+          aws elasticbeanstalk update-environment \
+            --application-name "${{ env.EB_APP_NAME }}" \
+            --environment-name "${{ env.EB_ENV_NAME }}" \
+            --option-settings \
+              "Namespace=aws:elasticbeanstalk:application:environment,OptionName=VITE_SUPABASE_URL,Value=${{ secrets.VITE_SUPABASE_URL }}" \
+              "Namespace=aws:elasticbeanstalk:application:environment,OptionName=VITE_SUPABASE_PROJECT_ID,Value=${{ secrets.VITE_SUPABASE_PROJECT_ID }}" \
+              "Namespace=aws:elasticbeanstalk:application:environment,OptionName=VITE_SUPABASE_PUBLISHABLE_KEY,Value=${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}" \
+              "Namespace=aws:elasticbeanstalk:application:environment,OptionName=VITE_SUPABASE_ANON_KEY,Value=${{ secrets.VITE_SUPABASE_ANON_KEY }}" \
+              "Namespace=aws:elasticbeanstalk:application:environment,OptionName=SUPABASE_SERVICE_ROLE_KEY,Value=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+              "Namespace=aws:elasticbeanstalk:application:environment,OptionName=DESTINATION_DB_URL,Value=${{ secrets.DESTINATION_DB_URL }}" \
+            --query "EnvironmentName" --output text 2>/dev/null || true
+
+      - name: Wait for Elastic Beanstalk environment to be Ready
+        run: |
+          echo "Checking environment status for ${{ env.EB_ENV_NAME }}..."
+          for i in {1..30}; do
+            STATUS=$(aws elasticbeanstalk describe-environments \
+              --environment-names "${{ env.EB_ENV_NAME }}" \
+              --query "Environments[0].Status" --output text 2>/dev/null || echo "Unknown")
+            echo "Attempt $i: Status is $STATUS"
+            if [ "$STATUS" = "Ready" ]; then
+              echo "Environment is Ready!"
+              break
+            fi
+            sleep 10
+          done
+
+      - name: Deploy to Elastic Beanstalk
+        uses: einaregilsson/beanstalk-deploy@v22
+        with:
+          aws_access_key:    ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key:    ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region:            ${{ env.AWS_REGION }}
+          application_name:  ${{ env.EB_APP_NAME }}
+          environment_name:  ${{ env.EB_ENV_NAME }}
+          version_label:     "${{ github.sha }}-${{ github.run_number }}"
+          deployment_package: deploy.zip
+          use_existing_version_if_available: true
+          wait_for_environment_recovery: 120
+
+      - name: Print EB URL
+        run: |
+          URL=$(aws elasticbeanstalk describe-environments \
+            --environment-names "${{ env.EB_ENV_NAME }}" \
+            --query "Environments[0].CNAME" --output text 2>/dev/null || echo "see AWS console")
+          echo "✅ Deployed to http://$URL"
