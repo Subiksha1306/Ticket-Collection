@@ -151,15 +151,11 @@ export async function GET(request: Request) {
     let monthAbbr = 'ALL';
     let dateRangeText = 'All submissions';
 
-    if (!allParam) {
-      let targetDate: Date;
-      if (monthParam && monthParam.includes('-')) {
-        const [yearStr, monthStr] = monthParam.split('-');
-        targetDate = new Date(parseInt(yearStr, 10), parseInt(monthStr, 10) - 1, 1);
-      } else {
-        targetDate = new Date();
-      }
+    const isMonthly = Boolean(monthParam && monthParam.includes('-') && !allParam);
 
+    if (isMonthly) {
+      const [yearStr, monthStr] = monthParam!.split('-');
+      const targetDate = new Date(parseInt(yearStr, 10), parseInt(monthStr, 10) - 1, 1);
       const year = targetDate.getFullYear();
       const month = targetDate.getMonth();
       const startDate = new Date(year, month, 1);
@@ -175,6 +171,11 @@ export async function GET(request: Request) {
       displayMonthLong = startDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
       displayMonthShort = startDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
       monthAbbr = startDate.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+    } else {
+      // All-Time report: include every submission across all months
+      displayMonthLong = 'All Time';
+      displayMonthShort = 'All Time';
+      monthAbbr = 'ALL';
     }
 
     // Fetch submissions
