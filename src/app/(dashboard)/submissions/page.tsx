@@ -86,10 +86,14 @@ export default async function MySubmissionsPage(props: {
                 return (
                   <tr key={sub.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {sub.ticketNumber}
+                      <Link href={`/submissions/${sub.id}`} className="font-semibold text-gray-900 hover:text-[var(--primary)] hover:underline">
+                        {sub.ticketNumber}
+                      </Link>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-[250px]">
-                      {currentVersion.title}
+                      <Link href={`/submissions/${sub.id}`} className="text-gray-900 hover:text-[var(--primary)] hover:underline block truncate" title={currentVersion.title}>
+                        {currentVersion.title}
+                      </Link>
                     </td>
                     {userIsAdmin && (
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

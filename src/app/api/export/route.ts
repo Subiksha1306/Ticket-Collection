@@ -161,11 +161,19 @@ Return your response as a valid JSON object with:
             if (content) {
               const parsed = JSON.parse(content);
               if (typeof parsed.score === 'number') {
+                const reasonStr = typeof parsed.reasoning === 'object' && parsed.reasoning !== null
+                  ? Object.entries(parsed.reasoning).map(([k, v]) => `• ${k}: ${v}`).join('\n')
+                  : (typeof parsed.reasoning === 'string' ? parsed.reasoning : null);
+
                 await prisma.submission.update({
                   where: { id: sub.id },
-                  data: { score: parsed.score }
+                  data: {
+                    score: parsed.score,
+                    scoreReason: reasonStr
+                  }
                 });
                 sub.score = parsed.score;
+                (sub as any).scoreReason = reasonStr;
               }
             }
           } catch (e) {
@@ -313,6 +321,7 @@ ${STYLES}
                 <span class="d">Created ${date}</span>
               </div>
               <p>${(v?.description || '').replace(/\n/g, '<br>')}</p>
+              ${sub.scoreReason ? `<div style="margin-top:14px;padding:12px 14px;background:#eef2ff;border-left:4px solid #4f46e5;border-radius:6px;font-size:13px;color:#312e81"><strong style="display:block;margin-bottom:4px;color:#1e1b4b">Score Evaluation (${sub.score}/100):</strong>${sub.scoreReason.replace(/\n/g, '<br>')}</div>` : ''}
             </div>
           </details>`;
         }).join('')}

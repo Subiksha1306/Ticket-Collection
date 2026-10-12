@@ -114,9 +114,16 @@ Return your response as a valid JSON object with:
         if (resultText) {
           const parsed = JSON.parse(resultText);
           if (typeof parsed.score === 'number') {
+            const reasonStr = typeof parsed.reasoning === 'object' && parsed.reasoning !== null
+              ? Object.entries(parsed.reasoning).map(([k, v]) => `• ${k}: ${v}`).join('\n')
+              : (typeof parsed.reasoning === 'string' ? parsed.reasoning : null);
+
             await prisma.submission.update({
               where: { id: sub.id },
-              data: { score: parsed.score }
+              data: {
+                score: parsed.score,
+                scoreReason: reasonStr
+              }
             });
             scoredCount++;
           }

@@ -87,7 +87,7 @@ export default async function SubmissionDetailsPage({ params }: { params: Promis
       <div className="flex gap-6 items-start">
         <main className="flex-1 space-y-6">
           <div className="card">
-            <div className="flex items-center gap-8 mb-6 pb-6 border-b border-gray-100">
+            <div className="flex flex-wrap items-center gap-8 mb-6 pb-6 border-b border-gray-100">
               <div>
                 <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Created by</div>
                 <div className="flex items-center gap-2">
@@ -98,14 +98,63 @@ export default async function SubmissionDetailsPage({ params }: { params: Promis
                 </div>
               </div>
               <div>
-                <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Last Updated</div>
-                <div className="text-sm font-medium text-gray-900">{new Date(currentVersion.createdAt).toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}</div>
+                <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Created Date</div>
+                <div className="text-sm font-medium text-gray-900">{new Date(submission.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</div>
               </div>
               <div>
                 <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Current Version</div>
                 <div className="text-sm font-medium text-gray-900">v{currentVersion.versionNumber}</div>
               </div>
+              <div>
+                <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Rubric Score</div>
+                <div className="text-sm font-bold text-indigo-700 flex items-center gap-1">
+                  {submission.score !== null ? (
+                    <span className="px-2.5 py-0.5 rounded-full bg-indigo-50 border border-indigo-200">
+                      {submission.score} / 100
+                    </span>
+                  ) : (
+                    <span className="text-gray-400 font-normal">Pending</span>
+                  )}
+                </div>
+              </div>
             </div>
+
+            {submission.score !== null && (
+              <div className="mb-8 p-5 rounded-xl bg-gradient-to-r from-indigo-50/70 via-purple-50/50 to-blue-50/70 border border-indigo-100 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2.5">
+                    <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-600 text-white shadow-xs">
+                      Rubric Evaluation
+                    </span>
+                    <span className="text-xs font-medium text-gray-600">
+                      Evaluated against the 6-criterion scoring rubric (100 pts)
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-1 bg-white px-3 py-1 rounded-lg border border-indigo-200/60 shadow-xs">
+                    <span className="text-2xl font-black text-indigo-600">{submission.score}</span>
+                    <span className="text-xs font-bold text-gray-400">/ 100</span>
+                  </div>
+                </div>
+
+                {submission.scoreReason ? (
+                  <div className="bg-white/90 p-4 rounded-lg border border-indigo-100/80">
+                    <div className="text-xs font-bold uppercase tracking-wider text-indigo-950 mb-1.5 flex items-center gap-1.5">
+                      <svg className="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      Why this score was awarded:
+                    </div>
+                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                      {submission.scoreReason}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-500 italic mt-1">
+                    Score was calculated based on Innovation, Business Impact, Implementation, Evidence, Scalability, and Ownership.
+                  </p>
+                )}
+              </div>
+            )}
 
             <div className="mb-8">
               <h3 className="text-lg font-bold text-gray-900 mb-2">Description</h3>
