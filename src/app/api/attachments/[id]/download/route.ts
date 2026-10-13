@@ -26,7 +26,34 @@ export async function GET(
     const url = new URL(request.url);
     const isPreview = url.searchParams.get('preview') === 'true';
 
-    // Download the file directly from Supabase and stream it to the client
+    // 1. Try fetching directly from candidate storage URLs (fast & works without service role key)
+    const candidateUrls = [
+      attachment.storagePath,
+      `https://htbkrfvxnsnucarwfarg.supabase.co/storage/v1/object/public/ticket-attachments/uploads/${attachment.storedFileName}`,
+      `https://htbkrfvxnsnucarwfarg.supabase.co/storage/v1/object/public/ticket-attachments/${attachment.storedFileName}`
+    ].filter(Boolean);
+
+    for (const candUrl of candidateUrls) {
+      try {
+        const fetchRes = await fetch(candUrl as string);
+        if (fetchRes.ok) {
+          const arrayBuffer = await fetchRes.arrayBuffer();
+          return new NextResponse(arrayBuffer, {
+            headers: {
+              'Content-Type': attachment.fileType || 'application/octet-stream',
+              'Content-Disposition': isPreview 
+                ? `inline; filename="${encodeURIComponent(attachment.originalFileName)}"` 
+                : `attachment; filename="${encodeURIComponent(attachment.originalFileName)}"`,
+              'Content-Length': String(arrayBuffer.byteLength),
+            }
+          });
+        }
+      } catch (err) {
+        console.warn(`Direct fetch from ${candUrl} failed:`, err);
+      }
+    }
+
+    // 2. Fallback: Download via Supabase client SDK
     const filePath = `uploads/${attachment.storedFileName}`;
     const { data, error } = await supabase.storage
       .from('ticket-attachments')
@@ -41,8 +68,8 @@ export async function GET(
       headers: {
         'Content-Type': attachment.fileType || 'application/octet-stream',
         'Content-Disposition': isPreview 
-          ? `inline; filename="${attachment.originalFileName}"` 
-          : `attachment; filename="${attachment.originalFileName}"`,
+          ? `inline; filename="${encodeURIComponent(attachment.originalFileName)}"` 
+          : `attachment; filename="${encodeURIComponent(attachment.originalFileName)}"`,
       }
     });
   } catch (error) {
