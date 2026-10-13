@@ -26,32 +26,19 @@ export async function GET(
     const url = new URL(request.url);
     const isPreview = url.searchParams.get('preview') === 'true';
 
-    // 1. Try fetching directly from candidate storage URLs (fast & works without service role key)
-    const candidateUrls = [
-      attachment.storagePath,
-      `https://htbkrfvxnsnucarwfarg.supabase.co/storage/v1/object/public/ticket-attachments/uploads/${attachment.storedFileName}`,
-      `https://htbkrfvxnsnucarwfarg.supabase.co/storage/v1/object/public/ticket-attachments/${attachment.storedFileName}`
-    ].filter(Boolean);
-
-    for (const candUrl of candidateUrls) {
-      try {
-        const fetchRes = await fetch(candUrl as string);
-        if (fetchRes.ok) {
-          const arrayBuffer = await fetchRes.arrayBuffer();
-          return new NextResponse(arrayBuffer, {
-            headers: {
-              'Content-Type': attachment.fileType || 'application/octet-stream',
-              'Content-Disposition': isPreview 
-                ? `inline; filename="${encodeURIComponent(attachment.originalFileName)}"` 
-                : `attachment; filename="${encodeURIComponent(attachment.originalFileName)}"`,
-              'Content-Length': String(arrayBuffer.byteLength),
-            }
-          });
-        }
-      } catch (err) {
-        console.warn(`Direct fetch from ${candUrl} failed:`, err);
-      }
+    // Redirect directly to the Supabase CDN URL (supports ?download=... for native filename & inline preview)
+    let fileUrl = attachment.storagePath;
+    if (!fileUrl || !fileUrl.startsWith('http')) {
+      fileUrl = `https://htbkrfvxnsnucarwfarg.supabase.co/storage/v1/object/public/ticket-attachments/uploads/${attachment.storedFileName}`;
     }
+
+    const downloadUrl = isPreview
+      ? fileUrl
+      : (fileUrl.includes('?')
+          ? `${fileUrl}&download=${encodeURIComponent(attachment.originalFileName)}`
+          : `${fileUrl}?download=${encodeURIComponent(attachment.originalFileName)}`);
+
+    return NextResponse.redirect(downloadUrl);
 
     // 2. Fallback: Download via Supabase client SDK
     const filePath = `uploads/${attachment.storedFileName}`;
