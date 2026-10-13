@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
@@ -86,9 +86,9 @@ function SidebarView({
 }: SidebarViewProps) {
   return (
     <div className="flex flex-col h-full">
-      {/* Brand Logo in Papillon Serif Font */}
-      <div className="pt-2 pb-6 px-3">
-        <Link href="/" onClick={onNavigate} className="inline-flex items-center group focus:outline-none">
+      {/* Brand Logo in Papillon Serif Font centered */}
+      <div className="pt-2 pb-6 px-3 flex justify-center text-center">
+        <Link href="/" onClick={onNavigate} className="inline-flex items-center justify-center group focus:outline-none text-center">
           <span className="font-papillon text-[28px] tracking-[0.04em] text-[var(--text)] select-none leading-none transition-transform group-hover:scale-[1.02]">
             Impact<span className="text-[var(--primary)]">X</span>
           </span>
@@ -172,6 +172,37 @@ export const AppShell: React.FC<AppShellProps> = ({
 }) => {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('impactx_theme');
+      if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        setTheme('dark');
+        document.documentElement.classList.add('dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        setTheme('light');
+        document.documentElement.classList.remove('dark');
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    } catch (_) {}
+  }, []);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    try {
+      localStorage.setItem('impactx_theme', nextTheme);
+      if (nextTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    } catch (_) {}
+  };
 
   const mainNav: NavItem[] = [
     { name: 'Home', href: '/', icon: 'home' },
@@ -292,8 +323,32 @@ export const AppShell: React.FC<AppShellProps> = ({
               </form>
             </div>
 
-            {/* Sign Out Pill Button */}
-            <div className="flex items-center gap-3">
+            {/* Theme Toggle & Sign Out Pill Buttons */}
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={toggleTheme}
+                aria-label={theme === 'dark' ? 'Switch to daylight theme' : 'Switch to night theme'}
+                title={theme === 'dark' ? 'Switch to daylight theme' : 'Switch to night theme'}
+                className="flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-white/60 dark:bg-white/10 backdrop-blur-md border border-white/80 dark:border-white/15 text-[var(--text)] hover:text-[var(--primary)] shadow-[0_2px_8px_rgba(44,66,110,0.06)] hover:shadow-md transition-all active:scale-95 text-xs font-semibold select-none group focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]/40"
+              >
+                {theme === 'dark' ? (
+                  <>
+                    <svg className="w-4 h-4 text-amber-300 group-hover:rotate-45 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <span>Day</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4 text-[var(--text-2)] group-hover:text-[var(--primary)] group-hover:-rotate-12 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                    <span>Night</span>
+                  </>
+                )}
+              </button>
+
               <button
                 type="button"
                 onClick={handleSignOut}
