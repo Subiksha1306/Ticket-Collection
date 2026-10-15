@@ -111,7 +111,7 @@ export default async function AwardsPage() {
               <a
                 href="/api/export?type=awards"
                 download
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-semibold border border-purple-200 transition-colors shadow-xs"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 text-xs font-semibold border border-purple-200 dark:border-purple-800/50 transition-colors shadow-xs"
                 title="Download monthly I2I Recognition Awards Dashboard as standalone HTML"
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -121,7 +121,7 @@ export default async function AwardsPage() {
               </a>
             </div>
           </div>
-          <div className="hidden sm:block text-[#b38728] font-serif italic text-xl">
+          <div className="hidden sm:block text-[#b38728] dark:text-[#f3c550] font-serif italic text-xl">
             Great ideas create brighter tomorrows!
           </div>
         </div>
@@ -129,9 +129,9 @@ export default async function AwardsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
           {/* WINNER CARD */}
-          <div className="relative rounded-2xl p-8 overflow-hidden bg-gradient-to-br from-[#fffdf5] to-[#fbf1cc] border border-[#f0d486] shadow-sm">
+          <div className="winner-card relative rounded-2xl p-8 overflow-hidden bg-gradient-to-br from-[#fffdf5] to-[#fbf1cc] dark:from-[#1c160a] dark:to-[#2a200d] border border-[#f0d486] dark:border-[#e5a93c]/35 shadow-sm dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all">
             {/* Confetti / background pattern */}
-            <div className="absolute inset-0 opacity-40" style={{ backgroundImage: 'radial-gradient(#e0bc46 1px, transparent 1px)', backgroundSize: '16px 16px' }}></div>
+            <div className="card-pattern absolute inset-0 opacity-40 dark:opacity-15" style={{ backgroundImage: 'radial-gradient(#e0bc46 1px, transparent 1px)', backgroundSize: '16px 16px' }}></div>
             
             <div className="relative z-10">
               <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-gradient-to-r from-[#dca72f] to-[#eebc49] text-white text-xs font-bold uppercase tracking-wider mb-6 shadow-sm">
@@ -140,17 +140,17 @@ export default async function AwardsPage() {
               </div>
 
               <div className="flex items-center gap-6">
-                <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center flex-shrink-0 shadow-[0_4px_12px_rgba(220,167,47,0.3)] border border-[#fbf1cc]">
-                  <div className="w-12 h-12 text-[#dca72f]">
+                <div className="winner-icon-bubble w-24 h-24 bg-white dark:bg-[#241b0c] rounded-full flex items-center justify-center flex-shrink-0 shadow-[0_4px_12px_rgba(220,167,47,0.3)] border border-[#fbf1cc] dark:border-[#e5a93c]/35 transition-colors">
+                  <div className="winner-icon w-12 h-12 text-[#dca72f] dark:text-[#f5c842]">
                     <svg viewBox="0 0 24 24" fill="currentColor">
                       <path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H7v2h10v-2h-4v-3.1a5.01 5.01 0 003.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM7 10.82C5.84 10.4 5 9.3 5 8V7h2v3.82zM19 8c0 1.3-.84 2.4-2 2.82V7h2v1z" />
                     </svg>
                   </div>
                 </div>
-                <div className="text-center sm:text-left flex-1">
-                  <h3 className="text-2xl font-bold text-gray-900 leading-tight mb-1">{winnerName}</h3>
-                  <p className="text-[#a57a1b] font-semibold mb-3">Innovator of the Month</p>
-                  <p className="text-sm font-serif italic text-gray-600">
+                <div className="text-center sm:text-left flex-1 min-w-0">
+                  <h3 className="winner-name text-2xl font-bold text-gray-900 dark:text-[#f0f4fc] leading-tight mb-1">{winnerName}</h3>
+                  <p className="winner-role text-[#a57a1b] dark:text-[#f5c842] font-semibold mb-3">Innovator of the Month</p>
+                  <p className="winner-quote text-sm font-serif italic text-gray-600 dark:text-[#c5d5ec]">
                     &ldquo;Leading with ideas, making an impact!&rdquo;
                   </p>
                 </div>
@@ -159,9 +159,9 @@ export default async function AwardsPage() {
           </div>
 
           {/* RUNNER-UP CARD */}
-          <div className="relative rounded-2xl p-8 overflow-hidden bg-gradient-to-br from-[#f8fafe] to-[#e6effb] border border-[#d2e2f7] shadow-sm">
+          <div className="runnerup-card relative rounded-2xl p-8 overflow-hidden bg-gradient-to-br from-[#f8fafe] to-[#e6effb] dark:from-[#101a2a] dark:to-[#18263c] border border-[#d2e2f7] dark:border-[#5a7da8]/35 shadow-sm dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all">
             {/* Confetti / background pattern */}
-            <div className="absolute inset-0 opacity-40" style={{ backgroundImage: 'radial-gradient(#abc7ed 1px, transparent 1px)', backgroundSize: '16px 16px' }}></div>
+            <div className="card-pattern absolute inset-0 opacity-40 dark:opacity-15" style={{ backgroundImage: 'radial-gradient(#abc7ed 1px, transparent 1px)', backgroundSize: '16px 16px' }}></div>
             
             <div className="relative z-10">
               <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-gradient-to-r from-[#8ba1ba] to-[#9db3cc] text-white text-xs font-bold uppercase tracking-wider mb-6 shadow-sm">
@@ -170,17 +170,17 @@ export default async function AwardsPage() {
               </div>
 
               <div className="flex items-center gap-6">
-                <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center flex-shrink-0 shadow-[0_4px_12px_rgba(139,161,186,0.2)] border border-[#e6effb]">
-                  <div className="w-12 h-12 text-[#6480a0] flex flex-col items-center justify-center relative">
+                <div className="runnerup-icon-bubble w-24 h-24 bg-white dark:bg-[#121d2e] rounded-full flex items-center justify-center flex-shrink-0 shadow-[0_4px_12px_rgba(139,161,186,0.2)] border border-[#e6effb] dark:border-[#5a7da8]/35 transition-colors">
+                  <div className="runnerup-icon w-12 h-12 text-[#6480a0] dark:text-[#8eaed4] flex flex-col items-center justify-center relative">
                     <svg viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.64-2.25 1.64-1.74 0-2.48-.77-2.58-1.93H7.49c.11 1.9 1.51 2.96 3.41 3.33V20h2.4v-1.66c1.65-.29 2.8-1.28 2.8-2.9 0-2.21-1.78-2.85-3.79-3.3z"/>
                     </svg>
                   </div>
                 </div>
-                <div className="text-center sm:text-left flex-1">
-                  <h3 className="text-2xl font-bold text-gray-900 leading-tight mb-1">{runnerUpName}</h3>
-                  <p className="text-[#6480a0] font-semibold mb-3">Outstanding Contribution</p>
-                  <p className="text-sm font-serif italic text-gray-600">
+                <div className="text-center sm:text-left flex-1 min-w-0">
+                  <h3 className="runnerup-name text-2xl font-bold text-gray-900 dark:text-[#f0f4fc] leading-tight mb-1">{runnerUpName}</h3>
+                  <p className="runnerup-role text-[#6480a0] dark:text-[#9bb8dd] font-semibold mb-3">Outstanding Contribution</p>
+                  <p className="runnerup-quote text-sm font-serif italic text-gray-600 dark:text-[#c5d5ec]">
                     &ldquo;Turning ideas into meaningful change!&rdquo;
                   </p>
                 </div>
@@ -194,7 +194,7 @@ export default async function AwardsPage() {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mt-8">
         <div className="px-8 py-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-yellow-50 flex items-center justify-center text-yellow-500">
+            <div className="w-10 h-10 rounded-full bg-yellow-50 dark:bg-yellow-500/10 flex items-center justify-center text-yellow-500">
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H7v2h10v-2h-4v-3.1a5.01 5.01 0 003.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM7 10.82C5.84 10.4 5 9.3 5 8V7h2v3.82zM19 8c0 1.3-.84 2.4-2 2.82V7h2v1z" /></svg>
             </div>
             <div>
@@ -205,12 +205,12 @@ export default async function AwardsPage() {
 
           {/* Dummy Filters to match UI */}
           <div className="flex items-center gap-3">
-            <div className="px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-600 flex items-center gap-2 bg-gray-50 cursor-not-allowed">
+            <div className="px-3 py-1.5 border border-gray-200 dark:border-white/10 rounded-md text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2 bg-gray-50 dark:bg-white/5 cursor-not-allowed">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
               All Years
               <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
             </div>
-            <div className="px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-600 flex items-center gap-2 bg-gray-50 cursor-not-allowed">
+            <div className="px-3 py-1.5 border border-gray-200 dark:border-white/10 rounded-md text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2 bg-gray-50 dark:bg-white/5 cursor-not-allowed">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" /></svg>
               Most Recent First
               <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
@@ -259,15 +259,15 @@ export default async function AwardsPage() {
         </div>
 
         {/* Footer */}
-        <div className="bg-[#f8f9fc] px-8 py-6 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="font-serif italic text-gray-600 text-lg">
+        <div className="awards-footer bg-[#f8f9fc] dark:bg-white/[0.02] px-8 py-6 border-t border-gray-200 dark:border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="font-serif italic text-gray-600 dark:text-gray-300 text-lg">
             &ldquo;Small ideas can make a big difference.&rdquo;
           </p>
-          <div className="flex items-center gap-3 text-sm font-bold text-gray-500 tracking-wider">
-            <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" /></svg>
-            <span className="text-gray-600">Submit. Share. Inspire.</span>
-            <span className="mx-2 text-gray-300">|</span>
-            <span className="text-gray-800">I2I IDEAS TO IMPACT</span>
+          <div className="flex items-center gap-3 text-sm font-bold text-gray-500 dark:text-gray-400 tracking-wider">
+            <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" /></svg>
+            <span className="text-gray-600 dark:text-gray-300">Submit. Share. Inspire.</span>
+            <span className="mx-2 text-gray-300 dark:text-gray-600">|</span>
+            <span className="text-gray-800 dark:text-gray-100">I2I IDEAS TO IMPACT</span>
           </div>
         </div>
       </div>

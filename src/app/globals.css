@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
 :root {
   --bg: #e8edf4;
   --glow: radial-gradient(60% 38% at 55% 0%, rgba(54,80,130,.55), rgba(54,80,130,0) 72%);
@@ -201,6 +203,85 @@ html.dark textarea::placeholder,
 [data-theme="dark"] input::placeholder,
 [data-theme="dark"] textarea::placeholder {
   color: #6e809e !important;
+}
+
+/* Awards Cards Night Theme */
+html.dark .winner-card,
+[data-theme="dark"] .winner-card {
+  background: linear-gradient(135deg, rgba(28, 22, 10, 0.95) 0%, rgba(42, 32, 14, 0.95) 100%) !important;
+  border-color: rgba(229, 169, 60, 0.35) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 24px rgba(220, 167, 47, 0.12) !important;
+}
+
+html.dark .runnerup-card,
+[data-theme="dark"] .runnerup-card {
+  background: linear-gradient(135deg, rgba(16, 26, 42, 0.95) 0%, rgba(24, 38, 60, 0.95) 100%) !important;
+  border-color: rgba(90, 125, 168, 0.35) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 24px rgba(78, 119, 182, 0.12) !important;
+}
+
+html.dark .winner-card .winner-name,
+[data-theme="dark"] .winner-card .winner-name,
+html.dark .runnerup-card .runnerup-name,
+[data-theme="dark"] .runnerup-card .runnerup-name {
+  color: #f0f4fc !important;
+}
+
+html.dark .winner-card .winner-role,
+[data-theme="dark"] .winner-card .winner-role {
+  color: #f5c842 !important;
+}
+
+html.dark .runnerup-card .runnerup-role,
+[data-theme="dark"] .runnerup-card .runnerup-role {
+  color: #9bb8dd !important;
+}
+
+html.dark .winner-card .winner-quote,
+[data-theme="dark"] .winner-card .winner-quote,
+html.dark .runnerup-card .runnerup-quote,
+[data-theme="dark"] .runnerup-card .runnerup-quote {
+  color: #c5d5ec !important;
+}
+
+html.dark .winner-card .winner-icon-bubble,
+[data-theme="dark"] .winner-card .winner-icon-bubble {
+  background-color: rgba(36, 27, 12, 0.9) !important;
+  border-color: rgba(229, 169, 60, 0.35) !important;
+  box-shadow: 0 4px 16px rgba(220, 167, 47, 0.25) !important;
+}
+
+html.dark .runnerup-card .runnerup-icon-bubble,
+[data-theme="dark"] .runnerup-card .runnerup-icon-bubble {
+  background-color: rgba(18, 29, 46, 0.9) !important;
+  border-color: rgba(90, 125, 168, 0.35) !important;
+  box-shadow: 0 4px 16px rgba(78, 119, 182, 0.25) !important;
+}
+
+html.dark .winner-card .winner-icon,
+[data-theme="dark"] .winner-card .winner-icon {
+  color: #f5c842 !important;
+}
+
+html.dark .runnerup-card .runnerup-icon,
+[data-theme="dark"] .runnerup-card .runnerup-icon {
+  color: #8eaed4 !important;
+}
+
+html.dark .winner-card .card-pattern,
+[data-theme="dark"] .winner-card .card-pattern {
+  opacity: 0.15 !important;
+}
+
+html.dark .runnerup-card .card-pattern,
+[data-theme="dark"] .runnerup-card .card-pattern {
+  opacity: 0.15 !important;
+}
+
+html.dark .awards-footer,
+[data-theme="dark"] .awards-footer {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 @keyframes custom-marquee {
