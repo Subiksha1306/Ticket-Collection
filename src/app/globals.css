@@ -172,6 +172,17 @@ html.dark .divide-gray-200,
   border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
+html.dark .bg-gray-50,
+[data-theme="dark"] .bg-gray-50 {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark .border-gray-300,
+[data-theme="dark"] .border-gray-300 {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
 html.dark .text-gray-900,
 [data-theme="dark"] .text-gray-900 {
   color: #f0f4fc !important;
@@ -330,6 +341,80 @@ html.dark .month-picker-popup .year-nav-btn:hover,
 [data-theme="dark"] .month-picker-popup .year-nav-btn:hover {
   background-color: rgba(255, 255, 255, 0.1) !important;
   color: #ffffff !important;
+}
+
+/* Rubric Evaluation Night Theme */
+html.dark .rubric-eval-card,
+[data-theme="dark"] .rubric-eval-card {
+  background: linear-gradient(135deg, rgba(30, 27, 75, 0.45) 0%, rgba(15, 23, 42, 0.65) 100%) !important;
+  border-color: rgba(99, 102, 241, 0.25) !important;
+}
+
+html.dark .rubric-reason-box,
+[data-theme="dark"] .rubric-reason-box {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark .text-indigo-950,
+[data-theme="dark"] .text-indigo-950 {
+  color: #c7d2fe !important;
+}
+
+html.dark .bg-indigo-50,
+[data-theme="dark"] .bg-indigo-50 {
+  background-color: rgba(99, 102, 241, 0.12) !important;
+  border-color: rgba(99, 102, 241, 0.25) !important;
+}
+
+html.dark .bg-indigo-100,
+[data-theme="dark"] .bg-indigo-100 {
+  background-color: rgba(99, 102, 241, 0.2) !important;
+}
+
+html.dark .text-indigo-700,
+[data-theme="dark"] .text-indigo-700 {
+  color: #a5b4fc !important;
+}
+
+html.dark .border-indigo-100,
+html.dark .border-indigo-200,
+[data-theme="dark"] .border-indigo-100,
+[data-theme="dark"] .border-indigo-200 {
+  border-color: rgba(99, 102, 241, 0.25) !important;
+}
+
+/* Secondary Button Component */
+.secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.secondary-btn:hover {
+  background-color: #f9fafb;
+}
+
+html.dark .secondary-btn,
+[data-theme="dark"] .secondary-btn {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  color: #f0f4fc !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+html.dark .secondary-btn:hover,
+[data-theme="dark"] .secondary-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 @keyframes custom-marquee {
