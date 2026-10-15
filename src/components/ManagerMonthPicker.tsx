@@ -74,27 +74,27 @@ export default function ManagerMonthPicker() {
     <div className="relative" ref={dropdownRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 bg-white border border-[#5B45FF] rounded-lg shadow-sm hover:bg-indigo-50/30 transition-colors"
+        className="month-picker-trigger flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#0c1524] border border-[#5B45FF] rounded-lg shadow-sm hover:bg-indigo-50/30 dark:hover:bg-indigo-950/30 transition-colors"
       >
         <Calendar className="w-[18px] h-[18px] text-[#5B45FF]" />
-        <span className="text-[15px] font-medium text-slate-700">{displayString}</span>
-        <ChevronDown className="w-[18px] h-[18px] text-gray-400 ml-1" />
+        <span className="trigger-text text-[15px] font-medium text-slate-700 dark:text-[#f0f4fc]">{displayString}</span>
+        <ChevronDown className="w-[18px] h-[18px] text-gray-400 dark:text-gray-300 ml-1" />
       </button>
 
       {isOpen && (
-        <div className="absolute top-[calc(100%+8px)] left-0 w-[300px] bg-white border border-gray-100 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.12)] z-50 p-5 font-sans">
+        <div className="month-picker-popup absolute top-[calc(100%+8px)] left-0 w-[300px] bg-white dark:bg-[#0c1524] border border-gray-100 dark:border-white/15 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.12)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.7)] z-50 p-5 font-sans">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <button 
               onClick={() => setViewYear(v => v - 1)}
-              className="p-1 hover:bg-gray-100 rounded-md transition-colors text-slate-800"
+              className="year-nav-btn p-1 hover:bg-gray-100 dark:hover:bg-white/10 rounded-md transition-colors text-slate-800 dark:text-[#f0f4fc]"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <span className="font-bold text-slate-800 text-[17px]">{viewYear}</span>
+            <span className="year-title font-bold text-slate-800 dark:text-[#f0f4fc] text-[17px]">{viewYear}</span>
             <button 
               onClick={() => setViewYear(v => v + 1)}
-              className="p-1 hover:bg-gray-100 rounded-md transition-colors text-slate-800"
+              className="year-nav-btn p-1 hover:bg-gray-100 dark:hover:bg-white/10 rounded-md transition-colors text-slate-800 dark:text-[#f0f4fc]"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -111,7 +111,7 @@ export default function ManagerMonthPicker() {
                   className={`text-[15px] py-2 rounded-lg transition-colors font-medium
                     ${isSelected 
                       ? 'bg-[#5B45FF] text-white shadow-sm' 
-                      : 'text-slate-700 hover:bg-gray-100'
+                      : 'month-btn-unselected text-slate-700 dark:text-[#d2def2] hover:bg-gray-100 dark:hover:bg-white/10 dark:hover:text-white'
                     }
                   `}
                 >
@@ -122,16 +122,16 @@ export default function ManagerMonthPicker() {
           </div>
 
           {/* Footer */}
-          <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
+          <div className="pt-4 border-t border-gray-100 dark:border-white/10 flex items-center justify-between">
             <button 
               onClick={handleClear}
-              className="text-[15px] text-gray-500 hover:text-gray-700 font-medium transition-colors"
+              className="text-[15px] text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white font-medium transition-colors"
             >
               Clear
             </button>
             <button 
               onClick={handleThisMonth}
-              className="text-[15px] text-[#5B45FF] hover:text-[#4a36d9] font-medium transition-colors"
+              className="text-[15px] text-[#5B45FF] hover:text-[#4a36d9] dark:text-[#8b7cf8] dark:hover:text-[#a79cfc] font-medium transition-colors"
             >
               This month
             </button>

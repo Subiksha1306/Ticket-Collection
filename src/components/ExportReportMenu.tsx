@@ -43,10 +43,10 @@ export default function ExportReportMenu({ monthParam }: ExportReportMenuProps) 
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-[calc(100%+8px)] w-88 bg-white border border-gray-100 rounded-xl shadow-[0_14px_45px_-10px_rgba(0,0,0,0.18)] z-50 p-2.5 font-sans">
+        <div className="export-menu-popup absolute right-0 top-[calc(100%+8px)] w-88 bg-white dark:bg-[#0c1524] border border-gray-100 dark:border-white/15 rounded-xl shadow-[0_14px_45px_-10px_rgba(0,0,0,0.18)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.7)] z-50 p-2.5 font-sans">
           {monthParam ? (
             <>
-              <div className="px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50/70 rounded-md mb-1.5">
+              <div className="px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/60 rounded-md mb-1.5">
                 Selected: {monthLabel}
               </div>
 

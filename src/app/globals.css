@@ -284,6 +284,54 @@ html.dark .awards-footer,
   border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
+/* Month Picker & Dropdown Popups Night Theme - Solid Opaque & High-Contrast */
+html.dark .month-picker-popup,
+[data-theme="dark"] .month-picker-popup,
+html.dark .export-menu-popup,
+[data-theme="dark"] .export-menu-popup {
+  background-color: #0c1524 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark .month-picker-trigger,
+[data-theme="dark"] .month-picker-trigger {
+  background-color: #0c1524 !important;
+  border-color: #5B45FF !important;
+}
+
+html.dark .month-picker-trigger .trigger-text,
+[data-theme="dark"] .month-picker-trigger .trigger-text {
+  color: #f0f4fc !important;
+}
+
+html.dark .month-picker-popup .month-btn-unselected,
+[data-theme="dark"] .month-picker-popup .month-btn-unselected {
+  color: #d2def2 !important;
+}
+
+html.dark .month-picker-popup .month-btn-unselected:hover,
+[data-theme="dark"] .month-picker-popup .month-btn-unselected:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
+html.dark .month-picker-popup .year-title,
+[data-theme="dark"] .month-picker-popup .year-title {
+  color: #ffffff !important;
+}
+
+html.dark .month-picker-popup .year-nav-btn,
+[data-theme="dark"] .month-picker-popup .year-nav-btn {
+  color: #d2def2 !important;
+}
+
+html.dark .month-picker-popup .year-nav-btn:hover,
+[data-theme="dark"] .month-picker-popup .year-nav-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
 @keyframes custom-marquee {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
