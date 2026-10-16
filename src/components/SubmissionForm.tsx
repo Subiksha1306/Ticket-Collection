@@ -20,7 +20,6 @@ export default function SubmissionForm({ initialData, isEditMode = false }: Subm
   const [ticketNumber, setTicketNumber] = useState(initialData?.ticketNumber || '');
   const [title, setTitle] = useState(initialData?.title || '');
   const [description, setDescription] = useState(initialData?.description || '');
-  const [priority, setPriority] = useState<'High' | 'Medium' | 'Low'>('Medium');
   const [files, setFiles] = useState<File[]>([]);
   const [existingAttachments, setExistingAttachments] = useState(initialData?.attachments || []);
   const [loading, setLoading] = useState(false);
@@ -345,39 +344,7 @@ export default function SubmissionForm({ initialData, isEditMode = false }: Subm
                   )}
                 </div>
 
-                {/* Field 3: Priority (Segmented Radio) */}
-                <div>
-                  <div className="flex items-center justify-between font-bold text-sm text-[var(--text)] mb-2">
-                    <span>Priority</span>
-                    <span className="text-xs text-[var(--text-3)] font-normal">Optional</span>
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap" role="radiogroup" aria-label="Priority">
-                    {(['High', 'Medium', 'Low'] as const).map((p) => {
-                      const isSelected = priority === p;
-                      const dotColor =
-                        p === 'High' ? 'bg-[#e5484d]' : p === 'Medium' ? 'bg-[#f5a524]' : 'bg-[#22c58b]';
-                      return (
-                        <button
-                          key={p}
-                          type="button"
-                          role="radio"
-                          aria-checked={isSelected}
-                          onClick={() => setPriority(p)}
-                          className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold border transition-all ${
-                            isSelected
-                              ? 'bg-[#dfe7f5] text-[var(--primary)] border-[var(--primary)] shadow-xs'
-                              : 'bg-white/70 text-[var(--text)] border-white/80 hover:bg-white'
-                          }`}
-                        >
-                          <span className={`w-2.5 h-2.5 rounded-full ${dotColor}`} />
-                          <span>{p}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Field 4: Description */}
+                {/* Field 3: Description */}
                 <div>
                   <label htmlFor="dsc" className="flex items-center justify-between font-bold text-sm text-[var(--text)] mb-2">
                     <span>
