@@ -48,13 +48,21 @@ export default async function AwardsPage() {
     if (directImage) return directImage;
     if (!name || name === 'TBD') return null;
     const clean = name.toLowerCase().trim();
+    const normalized = clean.replace(/[^a-z0-9]/g, '');
+
     const exact = usersWithImage.find((u) => u.name && u.name.toLowerCase().trim() === clean);
     if (exact?.image) return exact.image;
-    const partial = usersWithImage.find(
-      (u) =>
-        u.name &&
-        (u.name.toLowerCase().includes(clean) || clean.includes(u.name.toLowerCase().trim()))
+
+    const normMatch = usersWithImage.find(
+      (u) => u.name && u.name.toLowerCase().replace(/[^a-z0-9]/g, '') === normalized
     );
+    if (normMatch?.image) return normMatch.image;
+
+    const partial = usersWithImage.find((u) => {
+      if (!u.name) return false;
+      const uNorm = u.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+      return uNorm.includes(normalized) || normalized.includes(uNorm);
+    });
     return partial?.image || null;
   };
 

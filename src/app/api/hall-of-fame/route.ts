@@ -50,21 +50,33 @@ export async function POST(request: Request) {
 
     // Auto-match user profile picture if none provided
     let finalWinnerImage = winnerImage || null;
-    if (!finalWinnerImage) {
-      const u = await prisma.user.findFirst({
-        where: { name: { contains: winnerName.trim(), mode: 'insensitive' } },
-        select: { image: true },
-      });
-      finalWinnerImage = u?.image || null;
-    }
-
     let finalRunnerUpImage = runnerUpImage || null;
-    if (!finalRunnerUpImage) {
-      const u = await prisma.user.findFirst({
-        where: { name: { contains: runnerUpName.trim(), mode: 'insensitive' } },
-        select: { image: true },
+
+    if (!finalWinnerImage || !finalRunnerUpImage) {
+      const allUsers = await prisma.user.findMany({
+        where: { image: { not: null } },
+        select: { name: true, image: true },
       });
-      finalRunnerUpImage = u?.image || null;
+
+      if (!finalWinnerImage && winnerName) {
+        const norm = winnerName.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const match = allUsers.find((u) => {
+          if (!u.name) return false;
+          const uNorm = u.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+          return uNorm === norm || uNorm.includes(norm) || norm.includes(uNorm);
+        });
+        finalWinnerImage = match?.image || null;
+      }
+
+      if (!finalRunnerUpImage && runnerUpName) {
+        const norm = runnerUpName.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const match = allUsers.find((u) => {
+          if (!u.name) return false;
+          const uNorm = u.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+          return uNorm === norm || uNorm.includes(norm) || norm.includes(uNorm);
+        });
+        finalRunnerUpImage = match?.image || null;
+      }
     }
 
     const entry = await prisma.hallOfFame.upsert({
