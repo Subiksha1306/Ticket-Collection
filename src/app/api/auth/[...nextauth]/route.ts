@@ -10,7 +10,35 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.AZURE_AD_CLIENT_ID!,
       clientSecret: process.env.AZURE_AD_CLIENT_SECRET!,
       tenantId: process.env.AZURE_AD_TENANT_ID!,
+      authorization: {
+        params: {
+          scope: "openid profile email User.Read offline_access",
+        },
+      },
       allowDangerousEmailAccountLinking: true,
+      async profile(profile, tokens) {
+        let image: string | null = null;
+        if (tokens.access_token) {
+          try {
+            const photoRes = await fetch("https://graph.microsoft.com/v1.0/me/photos/240x240/$value", {
+              headers: { Authorization: `Bearer ${tokens.access_token}` },
+            });
+            if (photoRes.ok) {
+              const arrayBuffer = await photoRes.arrayBuffer();
+              const base64 = Buffer.from(arrayBuffer).toString("base64");
+              image = `data:image/jpeg;base64,${base64}`;
+            }
+          } catch (e) {
+            console.error("Failed to fetch user photo from Graph:", e);
+          }
+        }
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image,
+        };
+      },
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
@@ -21,9 +49,28 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        if (user.image) {
+          token.picture = user.image;
+        }
+        if (user.email && user.image) {
+          try {
+            await prisma.user.update({
+              where: { email: user.email },
+              data: { image: user.image },
+            });
+          } catch (_) {}
+        }
+      }
+      return token;
+    },
     async session({ session, token }) {
       if (session.user) {
         (session.user as any).id = token.sub;
+        if (token.picture) {
+          session.user.image = token.picture as string;
+        }
       }
       return session;
     },

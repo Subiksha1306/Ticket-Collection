@@ -37,6 +37,30 @@ export default async function AwardsPage() {
   const mostRecentWinner = historicalHallOfFame[0];
   const winnerName = mostRecentWinner?.winnerName || 'TBD';
   const runnerUpName = mostRecentWinner?.runnerUpName || 'TBD';
+
+  // Fetch registered users with images to resolve profile pictures for any winner/runner-up
+  const usersWithImage = await prisma.user.findMany({
+    where: { image: { not: null } },
+    select: { name: true, image: true },
+  });
+
+  const getUserImage = (name: string, directImage?: string | null) => {
+    if (directImage) return directImage;
+    if (!name || name === 'TBD') return null;
+    const clean = name.toLowerCase().trim();
+    const exact = usersWithImage.find((u) => u.name && u.name.toLowerCase().trim() === clean);
+    if (exact?.image) return exact.image;
+    const partial = usersWithImage.find(
+      (u) =>
+        u.name &&
+        (u.name.toLowerCase().includes(clean) || clean.includes(u.name.toLowerCase().trim()))
+    );
+    return partial?.image || null;
+  };
+
+  const winnerPhoto = getUserImage(winnerName, mostRecentWinner?.winnerImage);
+  const runnerUpPhoto = getUserImage(runnerUpName, mostRecentWinner?.runnerUpImage);
+
   const currentMonthDisplay = mostRecentWinner 
     ? `${getMonthName(mostRecentWinner.month)} ${mostRecentWinner.year}`
     : `${getMonthName(now.getMonth() + 1)} ${now.getFullYear()}`;
@@ -140,12 +164,25 @@ export default async function AwardsPage() {
               </div>
 
               <div className="flex items-center gap-6">
-                <div className="winner-icon-bubble w-24 h-24 bg-white dark:bg-[#241b0c] rounded-full flex items-center justify-center flex-shrink-0 shadow-[0_4px_12px_rgba(220,167,47,0.3)] border border-[#fbf1cc] dark:border-[#e5a93c]/35 transition-colors">
-                  <div className="winner-icon w-12 h-12 text-[#dca72f] dark:text-[#f5c842]">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H7v2h10v-2h-4v-3.1a5.01 5.01 0 003.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM7 10.82C5.84 10.4 5 9.3 5 8V7h2v3.82zM19 8c0 1.3-.84 2.4-2 2.82V7h2v1z" />
-                    </svg>
-                  </div>
+                <div className="winner-icon-bubble relative w-24 h-24 bg-white dark:bg-[#241b0c] rounded-full flex items-center justify-center flex-shrink-0 shadow-[0_4px_16px_rgba(220,167,47,0.35)] border-2 border-[#f0d486] dark:border-[#e5a93c]/50 transition-colors">
+                  {winnerPhoto ? (
+                    <>
+                      <img
+                        src={winnerPhoto}
+                        alt={winnerName}
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                      <span className="absolute -bottom-1 -right-1 w-7 h-7 bg-gradient-to-br from-amber-300 to-amber-500 text-amber-950 rounded-full flex items-center justify-center text-xs shadow-md border-2 border-white dark:border-[#1c160a]" title="Winner">
+                        🏆
+                      </span>
+                    </>
+                  ) : (
+                    <div className="winner-icon w-12 h-12 text-[#dca72f] dark:text-[#f5c842]">
+                      <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H7v2h10v-2h-4v-3.1a5.01 5.01 0 003.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM7 10.82C5.84 10.4 5 9.3 5 8V7h2v3.82zM19 8c0 1.3-.84 2.4-2 2.82V7h2v1z" />
+                      </svg>
+                    </div>
+                  )}
                 </div>
                 <div className="text-center sm:text-left flex-1 min-w-0">
                   <h3 className="winner-name text-2xl font-bold text-gray-900 dark:text-[#f0f4fc] leading-tight mb-1">{winnerName}</h3>
@@ -170,12 +207,25 @@ export default async function AwardsPage() {
               </div>
 
               <div className="flex items-center gap-6">
-                <div className="runnerup-icon-bubble w-24 h-24 bg-white dark:bg-[#121d2e] rounded-full flex items-center justify-center flex-shrink-0 shadow-[0_4px_12px_rgba(139,161,186,0.2)] border border-[#e6effb] dark:border-[#5a7da8]/35 transition-colors">
-                  <div className="runnerup-icon w-12 h-12 text-[#6480a0] dark:text-[#8eaed4] flex flex-col items-center justify-center relative">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.64-2.25 1.64-1.74 0-2.48-.77-2.58-1.93H7.49c.11 1.9 1.51 2.96 3.41 3.33V20h2.4v-1.66c1.65-.29 2.8-1.28 2.8-2.9 0-2.21-1.78-2.85-3.79-3.3z"/>
-                    </svg>
-                  </div>
+                <div className="runnerup-icon-bubble relative w-24 h-24 bg-white dark:bg-[#121d2e] rounded-full flex items-center justify-center flex-shrink-0 shadow-[0_4px_16px_rgba(100,128,160,0.35)] border-2 border-[#d2e2f7] dark:border-[#5a7da8]/50 transition-colors">
+                  {runnerUpPhoto ? (
+                    <>
+                      <img
+                        src={runnerUpPhoto}
+                        alt={runnerUpName}
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                      <span className="absolute -bottom-1 -right-1 w-7 h-7 bg-gradient-to-br from-blue-300 to-blue-500 text-blue-950 rounded-full flex items-center justify-center text-xs shadow-md border-2 border-white dark:border-[#101a2a]" title="Runner-up">
+                        🥈
+                      </span>
+                    </>
+                  ) : (
+                    <div className="runnerup-icon w-12 h-12 text-[#6480a0] dark:text-[#8eaed4] flex flex-col items-center justify-center relative">
+                      <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.64-2.25 1.64-1.74 0-2.48-.77-2.58-1.93H7.49c.11 1.9 1.51 2.96 3.41 3.33V20h2.4v-1.66c1.65-.29 2.8-1.28 2.8-2.9 0-2.21-1.78-2.85-3.79-3.3z"/>
+                      </svg>
+                    </div>
+                  )}
                 </div>
                 <div className="text-center sm:text-left flex-1 min-w-0">
                   <h3 className="runnerup-name text-2xl font-bold text-gray-900 dark:text-[#f0f4fc] leading-tight mb-1">{runnerUpName}</h3>
@@ -191,15 +241,15 @@ export default async function AwardsPage() {
       </div>
 
       {/* Past Winners Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mt-8">
-        <div className="px-8 py-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-[#111827] rounded-2xl shadow-sm border border-gray-200 dark:border-white/10 overflow-hidden mt-8 transition-colors">
+        <div className="px-8 py-6 border-b border-gray-100 dark:border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 rounded-full bg-yellow-50 dark:bg-yellow-500/10 flex items-center justify-center text-yellow-500">
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H7v2h10v-2h-4v-3.1a5.01 5.01 0 003.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM7 10.82C5.84 10.4 5 9.3 5 8V7h2v3.82zM19 8c0 1.3-.84 2.4-2 2.82V7h2v1z" /></svg>
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Past Winners</h2>
-              <p className="text-sm text-gray-500">A journey of great ideas and inspiring contributions.</p>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Past Winners</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">A journey of great ideas and inspiring contributions.</p>
             </div>
           </div>
 
@@ -219,40 +269,66 @@ export default async function AwardsPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-[#f9fafb]">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-white/10">
+            <thead className="bg-[#f9fafb] dark:bg-white/[0.03]">
               <tr>
-                <th scope="col" className="px-8 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider w-1/5">Month</th>
-                <th scope="col" className="px-8 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider w-2/5">Winner</th>
-                <th scope="col" className="px-8 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider w-2/5">Runner-up</th>
+                <th scope="col" className="px-8 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-1/5">Month</th>
+                <th scope="col" className="px-8 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-2/5">Winner</th>
+                <th scope="col" className="px-8 py-4 text-left text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider w-2/5">Runner-up</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
+            <tbody className="bg-white dark:bg-transparent divide-y divide-gray-100 dark:divide-white/5">
               {historicalHallOfFame.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="px-8 py-10 text-center text-gray-500">
+                  <td colSpan={3} className="px-8 py-10 text-center text-gray-500 dark:text-gray-400">
                     No past winners have been recorded yet.
                   </td>
                 </tr>
               ) : (
-                historicalHallOfFame.map((entry, index) => (
-                  <tr key={entry.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-8 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                      {getMonthName(entry.month)} {entry.year}
-                    </td>
-                    <td className="px-8 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                      <div className="flex items-center gap-2">
-                        <span className="text-yellow-500">🏆</span> {entry.winnerName}
-                      </div>
-                    </td>
-                    <td className="px-8 py-4 whitespace-nowrap text-sm text-gray-700">
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-400">🥈</span> {entry.runnerUpName}
-                      </div>
-                    </td>
-                    
-                  </tr>
-                ))
+                historicalHallOfFame.map((entry) => {
+                  const entryWinnerImg = getUserImage(entry.winnerName, entry.winnerImage);
+                  const entryRunnerUpImg = getUserImage(entry.runnerUpName, entry.runnerUpImage);
+
+                  return (
+                    <tr key={entry.id} className="hover:bg-gray-50 dark:hover:bg-white/[0.04] transition-colors">
+                      <td className="px-8 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-gray-100">
+                        {getMonthName(entry.month)} {entry.year}
+                      </td>
+                      <td className="px-8 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-medium">
+                        <div className="flex items-center gap-2.5">
+                          {entryWinnerImg ? (
+                            <img
+                              src={entryWinnerImg}
+                              alt={entry.winnerName}
+                              className="w-7 h-7 rounded-full object-cover border-2 border-amber-300 dark:border-amber-500/60 shadow-xs flex-shrink-0"
+                            />
+                          ) : (
+                            <span className="w-7 h-7 rounded-full bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center text-xs text-yellow-500 flex-shrink-0">
+                              🏆
+                            </span>
+                          )}
+                          <span className="truncate">{entry.winnerName}</span>
+                        </div>
+                      </td>
+                      <td className="px-8 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                        <div className="flex items-center gap-2.5">
+                          {entryRunnerUpImg ? (
+                            <img
+                              src={entryRunnerUpImg}
+                              alt={entry.runnerUpName}
+                              className="w-7 h-7 rounded-full object-cover border-2 border-blue-300 dark:border-blue-500/60 shadow-xs flex-shrink-0"
+                            />
+                          ) : (
+                            <span className="w-7 h-7 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-xs text-slate-500 flex-shrink-0">
+                              🥈
+                            </span>
+                          )}
+                          <span className="truncate">{entry.runnerUpName}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

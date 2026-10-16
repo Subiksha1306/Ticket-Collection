@@ -132,6 +132,8 @@ model HallOfFame {
   year           Int
   winnerName     String   @map("winner_name")
   runnerUpName   String   @map("runner_up_name")
+  winnerImage    String?  @map("winner_image") @db.Text
+  runnerUpImage  String?  @map("runner_up_image") @db.Text
   
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
