@@ -164,6 +164,41 @@ function SidebarView({
   );
 }
 
+function SubmissionsSearchBar() {
+  const [query, setQuery] = useState('');
+
+  useEffect(() => {
+    try {
+      const currentQ = new URLSearchParams(window.location.search).get('q') || '';
+      setQuery(currentQ);
+    } catch (_) {}
+  }, []);
+
+  return (
+    <form action="/submissions" method="GET" className="relative w-full">
+      <div className="relative">
+        <input
+          type="text"
+          name="q"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search by ticket, title, or person..."
+          className="w-full pl-5 pr-10 py-2.5 rounded-full bg-white/50 backdrop-blur-md border border-white/80 text-sm text-[var(--text)] placeholder-[var(--text-3)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30 focus:border-[var(--primary)] transition-all shadow-[0_2px_8px_rgba(44,66,110,0.04)]"
+        />
+        <button
+          type="submit"
+          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--text-3)] hover:text-[var(--primary)] transition-colors"
+          aria-label="Search"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </button>
+      </div>
+    </form>
+  );
+}
+
 export const AppShell: React.FC<AppShellProps> = ({
   userName = 'User',
   userEmail,
@@ -171,6 +206,7 @@ export const AppShell: React.FC<AppShellProps> = ({
   children,
 }) => {
   const pathname = usePathname();
+  const isSubmissionsPage = pathname === '/submissions' || pathname === '/submissions/';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
@@ -301,30 +337,12 @@ export const AppShell: React.FC<AppShellProps> = ({
                 </svg>
               </button>
 
-              {/* Pill Search Input */}
-              <form action="/submissions" method="GET" className="relative w-full">
-                <div className="relative">
-                  <input
-                    type="text"
-                    name="q"
-                    placeholder="Search by ticket, title, or person..."
-                    className="w-full pl-5 pr-10 py-2.5 rounded-full bg-white/50 backdrop-blur-md border border-white/80 text-sm text-[var(--text)] placeholder-[var(--text-3)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30 focus:border-[var(--primary)] transition-all shadow-[0_2px_8px_rgba(44,66,110,0.04)]"
-                  />
-                  <button
-                    type="submit"
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--text-3)] hover:text-[var(--primary)] transition-colors"
-                    aria-label="Search"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                  </button>
-                </div>
-              </form>
+              {/* Pill Search Input - Only shown on All Submissions page */}
+              {isSubmissionsPage && <SubmissionsSearchBar />}
             </div>
 
             {/* Theme Toggle & Sign Out Pill Buttons */}
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 ml-auto">
               <button
                 type="button"
                 onClick={toggleTheme}
