@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
-import FrsionCanvasDecor from '@/components/ui/FrsionCanvasDecor';
 import TechxleAsciiLogo from '@/components/ui/TechxleAsciiLogo';
 
 interface AppShellProps {
@@ -88,11 +87,11 @@ function SidebarView({
 }: SidebarViewProps) {
   return (
     <div className="flex flex-col h-full">
-      {/* Brand Logo in Papillon Serif Font centered */}
-      <div className="pt-2 pb-6 px-3 flex justify-center text-center">
-        <Link href="/" onClick={onNavigate} className="inline-flex items-center justify-center group focus:outline-none text-center">
+      {/* Brand Logo in Papillon Serif Font */}
+      <div className="pt-2 pb-6 px-3">
+        <Link href="/" onClick={onNavigate} className="inline-flex items-center gap-2 group focus:outline-none">
           <span className="font-papillon text-[28px] tracking-[0.04em] text-[var(--text)] select-none leading-none transition-transform group-hover:scale-[1.02]">
-            Impact<span className="text-[var(--primary)]">X</span>
+            Impact<span className="text-[var(--primary)] font-bold">X</span>
           </span>
         </Link>
       </div>
@@ -109,7 +108,7 @@ function SidebarView({
               className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-[14px] text-sm font-medium transition-all ${
                 isActive
                   ? 'bg-[var(--primary)] text-white font-semibold shadow-[0_4px_14px_rgba(61,90,140,0.25)]'
-                  : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-white/50'
+                  : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
               }`}
             >
               {renderNavIcon(item.icon)}
@@ -134,7 +133,7 @@ function SidebarView({
                   className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-[14px] text-sm font-medium transition-all ${
                     isActive
                       ? 'bg-[var(--primary)] text-white font-semibold shadow-[0_4px_14px_rgba(61,90,140,0.25)]'
-                      : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-white/50'
+                      : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
                   }`}
                 >
                   {renderNavIcon(item.icon)}
@@ -148,7 +147,7 @@ function SidebarView({
 
       {/* User Profile Pill at Bottom */}
       <div className="mt-auto pt-4">
-        <div className="flex items-center gap-3 p-3 rounded-[18px] bg-white/60 border border-white/75 shadow-[0_2px_8px_rgba(44,66,110,0.04)]">
+        <div className="flex items-center gap-3 p-3 rounded-[16px] bg-white/70 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 shadow-[0_2px_8px_rgba(44,66,110,0.04)]">
           <div className="w-9 h-9 rounded-full bg-[var(--primary)] text-white font-bold flex items-center justify-center shrink-0 shadow-sm text-sm">
             {initial}
           </div>
@@ -185,7 +184,7 @@ function SubmissionsSearchBar() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by ticket, title, or person..."
-          className="w-full pl-5 pr-10 py-2.5 rounded-full bg-white/50 backdrop-blur-md border border-white/80 text-sm text-[var(--text)] placeholder-[var(--text-3)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30 focus:border-[var(--primary)] transition-all shadow-[0_2px_8px_rgba(44,66,110,0.04)]"
+          className="w-full pl-5 pr-10 py-2 rounded-full bg-white/70 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700 text-sm text-[var(--text)] placeholder-[var(--text-3)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30 focus:border-[var(--primary)] transition-all shadow-sm"
         />
         <button
           type="submit"
@@ -263,7 +262,7 @@ export const AppShell: React.FC<AppShellProps> = ({
   const initial = (displayName.charAt(0) || 'U').toUpperCase();
 
   return (
-    <div className="min-h-screen bg-[var(--canvas-bg)] relative overflow-x-hidden text-[var(--text)] font-sans antialiased selection:bg-[var(--primary)] selection:text-white transition-colors duration-300">
+    <div className="min-h-screen flex bg-[var(--bg)] text-[var(--text)] font-sans antialiased selection:bg-[var(--primary)] selection:text-white transition-colors duration-200">
       {/* Background Radial Glow */}
       <div
         className="fixed inset-0 pointer-events-none z-0"
@@ -271,127 +270,111 @@ export const AppShell: React.FC<AppShellProps> = ({
         aria-hidden="true"
       />
 
-      {/* Techxle ASCII / Halftone Logo merging into canvas background */}
-      <div
-        className="fixed -top-12 -right-16 md:right-0 lg:right-4 w-[620px] md:w-[780px] lg:w-[920px] max-w-[65vw] h-auto pointer-events-none z-0 select-none opacity-[0.16] dark:opacity-[0.20] text-[#2c426e] dark:text-sky-300 transition-opacity duration-500"
-        aria-hidden="true"
-      >
-        <TechxleAsciiLogo variant="emblem" fadeDirection="left" showAsciiText={true} />
-      </div>
+      {/* Persistent Full-Height Professional Sidebar (Desktop) */}
+      <aside className="w-64 shrink-0 hidden lg:flex flex-col bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-r border-slate-200/80 dark:border-slate-800/80 p-5 h-screen sticky top-0 z-30">
+        <SidebarView
+          mainNav={mainNav}
+          workspaceNav={workspaceNav}
+          pathname={pathname}
+          userName={displayName}
+          initial={initial}
+        />
+      </aside>
 
-      {/* 3D Decorative Orbs & Glass Elements matching FrsionOS */}
-      <FrsionCanvasDecor />
-
-      {/* Main Page Container with 20px padding */}
-      <div className="relative z-10 p-4 sm:p-6 min-h-screen flex gap-6 max-w-[1600px] mx-auto">
-        {/* Floating Glass Sidebar (Desktop) */}
-        <aside
-          className="w-[240px] shrink-0 hidden lg:flex flex-col master-acrylic-canvas p-5 h-[calc(100vh-48px)] sticky top-6 z-20"
+      {/* Mobile Sidebar Overlay Drawer */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-50 lg:hidden bg-slate-900/40 backdrop-blur-sm flex"
+          onClick={() => setMobileMenuOpen(false)}
         >
-          <SidebarView
-            mainNav={mainNav}
-            workspaceNav={workspaceNav}
-            pathname={pathname}
-            userName={displayName}
-            initial={initial}
-          />
-        </aside>
-
-        {/* Mobile Sidebar Overlay Drawer */}
-        {mobileMenuOpen && (
           <div
-            className="fixed inset-0 z-50 lg:hidden bg-slate-900/40 backdrop-blur-sm flex"
-            onClick={() => setMobileMenuOpen(false)}
+            className="w-72 h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-5 shadow-2xl flex flex-col"
+            onClick={(e) => e.stopPropagation()}
           >
-            <div
-              className="w-[280px] h-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-[24px] border-r border-white/80 dark:border-white/10 p-5 shadow-2xl flex flex-col"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex justify-end mb-2">
-                <button
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="p-2 rounded-full hover:bg-black/5 text-[var(--text-2)]"
-                  aria-label="Close menu"
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <SidebarView
-                mainNav={mainNav}
-                workspaceNav={workspaceNav}
-                pathname={pathname}
-                onNavigate={() => setMobileMenuOpen(false)}
-                userName={displayName}
-                initial={initial}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Main Content Area */}
-        <div className="flex-1 min-w-0 flex flex-col gap-6">
-          {/* Top Bar with Search & Sign Out */}
-          <header className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3 flex-1 max-w-md">
-              {/* Mobile hamburger menu toggle */}
+            <div className="flex justify-end mb-2">
               <button
-                type="button"
-                onClick={() => setMobileMenuOpen(true)}
-                className="lg:hidden p-2.5 rounded-full bg-white/60 dark:bg-white/10 backdrop-blur-md border border-white/80 dark:border-white/15 text-[var(--text-2)] hover:text-[var(--text)] shadow-sm"
-                aria-label="Open menu"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text-2)]"
+                aria-label="Close menu"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
-
-              {/* Pill Search Input - Only shown on All Submissions page */}
-              {isSubmissionsPage && <SubmissionsSearchBar />}
             </div>
-
-            {/* Theme Toggle & Sign Out Pill Buttons */}
-            <div className="flex items-center gap-2.5 ml-auto">
-              <button
-                type="button"
-                onClick={toggleTheme}
-                aria-label={theme === 'dark' ? 'Switch to daylight theme' : 'Switch to night theme'}
-                title={theme === 'dark' ? 'Switch to daylight theme' : 'Switch to night theme'}
-                className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/60 dark:bg-white/10 backdrop-blur-md border border-white/80 dark:border-white/15 text-[var(--text)] hover:text-[var(--primary)] shadow-[0_2px_8px_rgba(44,66,110,0.06)] hover:shadow-md transition-all active:scale-95 text-xs font-semibold select-none group focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]/40"
-              >
-                {theme === 'dark' ? (
-                  <>
-                    <svg className="w-4 h-4 text-amber-300 group-hover:rotate-45 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                    <span>Day</span>
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-4 h-4 text-[var(--text-2)] group-hover:text-[var(--primary)] group-hover:-rotate-12 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                    </svg>
-                    <span>Night</span>
-                  </>
-                )}
-              </button>
-
-              <button
-                type="button"
-                onClick={handleSignOut}
-                className="frsion-pill-dark"
-              >
-                Sign out
-              </button>
-            </div>
-          </header>
-
-          {/* Page Body inside Master Acrylic Glass Canvas */}
-          <main className="flex-1 flex flex-col gap-6 master-acrylic-canvas p-6 sm:p-8">
-            {children}
-          </main>
+            <SidebarView
+              mainNav={mainNav}
+              workspaceNav={workspaceNav}
+              pathname={pathname}
+              onNavigate={() => setMobileMenuOpen(false)}
+              userName={displayName}
+              initial={initial}
+            />
+          </div>
         </div>
+      )}
+
+      {/* Main Full-Page Content Column */}
+      <div className="flex-1 min-w-0 flex flex-col min-h-screen relative overflow-x-hidden">
+        {/* Top Header Bar */}
+        <header className="sticky top-0 z-20 flex items-center justify-between gap-4 px-6 sm:px-8 lg:px-10 py-3.5 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border-b border-slate-200/70 dark:border-slate-800/70">
+          <div className="flex items-center gap-3 flex-1 max-w-md">
+            {/* Mobile hamburger menu toggle */}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(true)}
+              className="lg:hidden p-2 rounded-lg bg-white/70 dark:bg-white/10 border border-slate-200/80 dark:border-white/10 text-[var(--text-2)] hover:text-[var(--text)] shadow-sm"
+              aria-label="Open menu"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+
+            {/* Pill Search Input - Only shown on All Submissions page */}
+            {isSubmissionsPage && <SubmissionsSearchBar />}
+          </div>
+
+          {/* Theme Toggle & Sign Out Pill Buttons */}
+          <div className="flex items-center gap-2.5 ml-auto">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={theme === 'dark' ? 'Switch to daylight theme' : 'Switch to night theme'}
+              title={theme === 'dark' ? 'Switch to daylight theme' : 'Switch to night theme'}
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 text-[var(--text)] hover:text-[var(--primary)] text-xs font-semibold shadow-sm hover:shadow transition-all active:scale-95"
+            >
+              {theme === 'dark' ? (
+                <>
+                  <svg className="w-3.5 h-3.5 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                  <span>Day</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-3.5 h-3.5 text-[var(--text-2)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  </svg>
+                  <span>Night</span>
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="px-5 py-1.5 rounded-full bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white text-xs font-semibold shadow-sm hover:shadow transition-all active:scale-95"
+            >
+              Sign out
+            </button>
+          </div>
+        </header>
+
+        {/* Full-Page Content Area */}
+        <main className="flex-1 p-6 sm:p-8 lg:p-10 w-full relative z-10">
+          {children}
+        </main>
       </div>
     </div>
   );
