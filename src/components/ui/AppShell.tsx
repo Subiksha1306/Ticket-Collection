@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
-import TechxleAsciiLogo from '@/components/ui/TechxleAsciiLogo';
 
 interface AppShellProps {
   userName?: string | null;
@@ -105,10 +104,10 @@ function SidebarView({
               key={item.name}
               href={item.href}
               onClick={onNavigate}
-              className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-[14px] text-sm font-medium transition-all ${
+              className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-[12px] text-sm font-medium transition-all ${
                 isActive
-                  ? 'bg-[var(--primary)] text-white font-semibold shadow-[0_4px_14px_rgba(61,90,140,0.25)]'
-                  : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
+                  ? 'bg-[var(--primary)] text-white font-semibold shadow-sm'
+                  : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             >
               {renderNavIcon(item.icon)}
@@ -130,10 +129,10 @@ function SidebarView({
                   key={item.name}
                   href={item.href}
                   onClick={onNavigate}
-                  className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-[14px] text-sm font-medium transition-all ${
+                  className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-[12px] text-sm font-medium transition-all ${
                     isActive
-                      ? 'bg-[var(--primary)] text-white font-semibold shadow-[0_4px_14px_rgba(61,90,140,0.25)]'
-                      : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
+                      ? 'bg-[var(--primary)] text-white font-semibold shadow-sm'
+                      : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
                 >
                   {renderNavIcon(item.icon)}
@@ -147,7 +146,7 @@ function SidebarView({
 
       {/* User Profile Pill at Bottom */}
       <div className="mt-auto pt-4">
-        <div className="flex items-center gap-3 p-3 rounded-[16px] bg-white/70 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 shadow-[0_2px_8px_rgba(44,66,110,0.04)]">
+        <div className="flex items-center gap-3 p-3 rounded-[14px] bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80">
           <div className="w-9 h-9 rounded-full bg-[var(--primary)] text-white font-bold flex items-center justify-center shrink-0 shadow-sm text-sm">
             {initial}
           </div>
@@ -184,7 +183,7 @@ function SubmissionsSearchBar() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by ticket, title, or person..."
-          className="w-full pl-5 pr-10 py-2 rounded-full bg-white/70 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700 text-sm text-[var(--text)] placeholder-[var(--text-3)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30 focus:border-[var(--primary)] transition-all shadow-sm"
+          className="w-full pl-5 pr-10 py-2 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-[var(--text)] placeholder-[var(--text-3)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30 focus:border-[var(--primary)] transition-all shadow-sm"
         />
         <button
           type="submit"
@@ -262,16 +261,9 @@ export const AppShell: React.FC<AppShellProps> = ({
   const initial = (displayName.charAt(0) || 'U').toUpperCase();
 
   return (
-    <div className="min-h-screen flex bg-[var(--bg)] text-[var(--text)] font-sans antialiased selection:bg-[var(--primary)] selection:text-white transition-colors duration-200">
-      {/* Background Radial Glow */}
-      <div
-        className="fixed inset-0 pointer-events-none z-0"
-        style={{ background: 'var(--glow)' }}
-        aria-hidden="true"
-      />
-
+    <div className="min-h-screen flex bg-[#f4f7fb] dark:bg-[#0b0f19] text-[var(--text)] font-sans antialiased selection:bg-[var(--primary)] selection:text-white transition-colors duration-200">
       {/* Persistent Full-Height Professional Sidebar (Desktop) */}
-      <aside className="w-64 shrink-0 hidden lg:flex flex-col bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-r border-slate-200/80 dark:border-slate-800/80 p-5 h-screen sticky top-0 z-30">
+      <aside className="w-64 shrink-0 hidden lg:flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-5 h-screen sticky top-0 z-30">
         <SidebarView
           mainNav={mainNav}
           workspaceNav={workspaceNav}
@@ -317,13 +309,13 @@ export const AppShell: React.FC<AppShellProps> = ({
       {/* Main Full-Page Content Column */}
       <div className="flex-1 min-w-0 flex flex-col min-h-screen relative overflow-x-hidden">
         {/* Top Header Bar */}
-        <header className="sticky top-0 z-20 flex items-center justify-between gap-4 px-6 sm:px-8 lg:px-10 py-3.5 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border-b border-slate-200/70 dark:border-slate-800/70">
+        <header className="sticky top-0 z-20 flex items-center justify-between gap-4 px-6 sm:px-8 lg:px-10 py-3.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-3 flex-1 max-w-md">
             {/* Mobile hamburger menu toggle */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 rounded-lg bg-white/70 dark:bg-white/10 border border-slate-200/80 dark:border-white/10 text-[var(--text-2)] hover:text-[var(--text)] shadow-sm"
+              className="lg:hidden p-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[var(--text-2)] hover:text-[var(--text)] shadow-sm"
               aria-label="Open menu"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -342,7 +334,7 @@ export const AppShell: React.FC<AppShellProps> = ({
               onClick={toggleTheme}
               aria-label={theme === 'dark' ? 'Switch to daylight theme' : 'Switch to night theme'}
               title={theme === 'dark' ? 'Switch to daylight theme' : 'Switch to night theme'}
-              className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 text-[var(--text)] hover:text-[var(--primary)] text-xs font-semibold shadow-sm hover:shadow transition-all active:scale-95"
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-[var(--text)] hover:text-[var(--primary)] text-xs font-semibold shadow-sm transition-all active:scale-95"
             >
               {theme === 'dark' ? (
                 <>
@@ -371,7 +363,7 @@ export const AppShell: React.FC<AppShellProps> = ({
           </div>
         </header>
 
-        {/* Full-Page Content Area */}
+        {/* Seamless Full-Page Content Area - No Outer Card Wrapping */}
         <main className="flex-1 p-6 sm:p-8 lg:p-10 w-full relative z-10">
           {children}
         </main>
