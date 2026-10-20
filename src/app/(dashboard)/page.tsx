@@ -126,14 +126,14 @@ export default async function Dashboard() {
           </p>
         </div>
 
-        {/* Ambient Techxle ASCII Logo with ASCII Values merging from right to left */}
+        {/* Ambient Techxle ASCII Logo with ASCII Values merging softly towards top-left */}
         <div 
           className="absolute -top-12 sm:-top-16 right-[-10px] sm:right-2 lg:right-6 w-[340px] sm:w-[460px] md:w-[540px] lg:w-[620px] pointer-events-none z-0 select-none text-[#2c426e] dark:text-sky-300 opacity-60 dark:opacity-65 transition-all duration-300"
           aria-hidden="true"
         >
           <TechxleAsciiLogo 
             variant="emblem" 
-            fadeDirection="left" 
+            fadeDirection="top-left" 
             renderMode="hybrid"
             showAsciiValues={true}
           />
