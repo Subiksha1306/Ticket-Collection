@@ -107,7 +107,7 @@ function SidebarView({
               className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-[12px] text-sm font-medium transition-all ${
                 isActive
                   ? 'bg-[var(--primary)] text-white font-semibold shadow-sm'
-                  : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-slate-100 dark:hover:bg-slate-800'
+                  : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-slate-100/70 dark:hover:bg-slate-800/60'
               }`}
             >
               {renderNavIcon(item.icon)}
@@ -132,7 +132,7 @@ function SidebarView({
                   className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-[12px] text-sm font-medium transition-all ${
                     isActive
                       ? 'bg-[var(--primary)] text-white font-semibold shadow-sm'
-                      : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-slate-100 dark:hover:bg-slate-800'
+                      : 'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-slate-100/70 dark:hover:bg-slate-800/60'
                   }`}
                 >
                   {renderNavIcon(item.icon)}
@@ -146,7 +146,7 @@ function SidebarView({
 
       {/* User Profile Pill at Bottom */}
       <div className="mt-auto pt-4">
-        <div className="flex items-center gap-3 p-3 rounded-[14px] bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80">
+        <div className="flex items-center gap-3 p-3 rounded-[14px] bg-white/60 dark:bg-slate-800/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-700/60 shadow-sm">
           <div className="w-9 h-9 rounded-full bg-[var(--primary)] text-white font-bold flex items-center justify-center shrink-0 shadow-sm text-sm">
             {initial}
           </div>
@@ -183,7 +183,7 @@ function SubmissionsSearchBar() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by ticket, title, or person..."
-          className="w-full pl-5 pr-10 py-2 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-[var(--text)] placeholder-[var(--text-3)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30 focus:border-[var(--primary)] transition-all shadow-sm"
+          className="w-full pl-5 pr-10 py-2 rounded-full bg-white/70 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700 text-sm text-[var(--text)] placeholder-[var(--text-3)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30 focus:border-[var(--primary)] transition-all shadow-sm"
         />
         <button
           type="submit"
@@ -262,8 +262,8 @@ export const AppShell: React.FC<AppShellProps> = ({
 
   return (
     <div className="min-h-screen flex bg-[#f4f7fb] dark:bg-[#0b0f19] text-[var(--text)] font-sans antialiased selection:bg-[var(--primary)] selection:text-white transition-colors duration-200">
-      {/* Persistent Full-Height Professional Sidebar (Desktop) */}
-      <aside className="w-64 shrink-0 hidden lg:flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-5 h-screen sticky top-0 z-30">
+      {/* Blurred Frosted Glass Sidebar (Desktop) - Blurs out left side */}
+      <aside className="w-64 shrink-0 hidden lg:flex flex-col bg-white/70 dark:bg-slate-900/75 backdrop-blur-2xl border-r border-slate-200/70 dark:border-slate-800/70 p-5 h-screen sticky top-0 z-30 shadow-[4px_0_24px_-4px_rgba(44,66,110,0.04)]">
         <SidebarView
           mainNav={mainNav}
           workspaceNav={workspaceNav}
@@ -308,14 +308,34 @@ export const AppShell: React.FC<AppShellProps> = ({
 
       {/* Main Full-Page Content Column */}
       <div className="flex-1 min-w-0 flex flex-col min-h-screen relative overflow-x-hidden">
-        {/* Top Header Bar */}
-        <header className="sticky top-0 z-20 flex items-center justify-between gap-4 px-6 sm:px-8 lg:px-10 py-3.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+        {/* Soft Top Blur Diffusion Sheet: Softens any element passing under or near the header */}
+        <div 
+          className="absolute top-0 inset-x-0 h-28 pointer-events-none z-20 backdrop-blur-[8px]" 
+          style={{
+            maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0) 100%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0) 100%)',
+          }}
+          aria-hidden="true" 
+        />
+
+        {/* Soft Left Blur Diffusion Strip: Softens the transition along the sidebar border */}
+        <div 
+          className="absolute top-0 bottom-0 left-0 w-16 pointer-events-none z-20 backdrop-blur-[6px]" 
+          style={{
+            maskImage: 'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%)',
+            WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%)',
+          }}
+          aria-hidden="true" 
+        />
+
+        {/* Blurred Frosted Glass Top Header Bar - Blurs out the top area */}
+        <header className="sticky top-0 z-30 flex items-center justify-between gap-4 px-6 sm:px-8 lg:px-10 py-3.5 bg-white/60 dark:bg-slate-900/65 backdrop-blur-2xl border-b border-slate-200/60 dark:border-slate-800/60 shadow-[0_4px_24px_-4px_rgba(44,66,110,0.04)]">
           <div className="flex items-center gap-3 flex-1 max-w-md">
             {/* Mobile hamburger menu toggle */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[var(--text-2)] hover:text-[var(--text)] shadow-sm"
+              className="lg:hidden p-2 rounded-lg bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 text-[var(--text-2)] hover:text-[var(--text)] shadow-sm"
               aria-label="Open menu"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -334,7 +354,7 @@ export const AppShell: React.FC<AppShellProps> = ({
               onClick={toggleTheme}
               aria-label={theme === 'dark' ? 'Switch to daylight theme' : 'Switch to night theme'}
               title={theme === 'dark' ? 'Switch to daylight theme' : 'Switch to night theme'}
-              className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-[var(--text)] hover:text-[var(--primary)] text-xs font-semibold shadow-sm transition-all active:scale-95"
+              className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 hover:bg-white/90 dark:bg-slate-800/80 dark:hover:bg-slate-700/90 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 text-[var(--text)] hover:text-[var(--primary)] text-xs font-semibold shadow-sm transition-all active:scale-95"
             >
               {theme === 'dark' ? (
                 <>
@@ -363,7 +383,7 @@ export const AppShell: React.FC<AppShellProps> = ({
           </div>
         </header>
 
-        {/* Seamless Full-Page Content Area - No Outer Card Wrapping */}
+        {/* Seamless Full-Page Content Area */}
         <main className="flex-1 p-6 sm:p-8 lg:p-10 w-full relative z-10">
           {children}
         </main>

@@ -7,7 +7,7 @@ export interface TechxleAsciiLogoProps {
   className?: string;
   opacity?: number;
   color?: string;
-  fadeDirection?: 'left' | 'right' | 'both' | 'radial' | 'none';
+  fadeDirection?: 'left' | 'right' | 'both' | 'radial' | 'top-left' | 'none';
   showAsciiText?: boolean;
   showAsciiValues?: boolean;
   renderMode?: 'hybrid' | 'halftone' | 'ascii';
@@ -18,7 +18,7 @@ export default function TechxleAsciiLogo({
   className = '',
   opacity = 1,
   color = 'currentColor',
-  fadeDirection = 'left',
+  fadeDirection = 'top-left',
   showAsciiText = true,
   showAsciiValues = true,
   renderMode = 'hybrid',
@@ -31,6 +31,13 @@ export default function TechxleAsciiLogo({
 
   // Mask CSS for HTML elements (pre tag)
   const getHtmlMaskStyle = (): React.CSSProperties => {
+    if (fadeDirection === 'top-left') {
+      const grad = 'radial-gradient(ellipse at 92% 85%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 35%, rgba(0,0,0,0.5) 65%, rgba(0,0,0,0.12) 85%, rgba(0,0,0,0) 100%)';
+      return {
+        maskImage: grad,
+        WebkitMaskImage: grad,
+      };
+    }
     if (fadeDirection === 'left') {
       const grad = 'linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,0.95) 40%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0.15) 88%, rgba(0,0,0,0) 100%)';
       return {
@@ -65,6 +72,16 @@ export default function TechxleAsciiLogo({
           xmlns="http://www.w3.org/2000/svg"
         >
           <defs>
+            {fadeDirection === 'top-left' && (
+              <radialGradient id={`${maskId}_grad`} cx="92%" cy="85%" r="92%">
+                <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+                <stop offset="35%" stopColor="#ffffff" stopOpacity="0.95" />
+                <stop offset="65%" stopColor="#ffffff" stopOpacity="0.5" />
+                <stop offset="85%" stopColor="#ffffff" stopOpacity="0.12" />
+                <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+              </radialGradient>
+            )}
+
             {fadeDirection === 'left' && (
               <linearGradient id={`${maskId}_grad`} x1="100%" y1="50%" x2="0%" y2="50%">
                 <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
