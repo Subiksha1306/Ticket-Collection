@@ -71,39 +71,101 @@ export default function HallOfFameForm() {
     }
   };
 
+  // Helper to match a user from registeredUsers by exact, normalized, or partial name
+  const findMatchingUserImage = (inputName: string): string | null => {
+    if (!inputName || !inputName.trim()) return null;
+    const clean = inputName.toLowerCase().trim();
+    const normalized = clean.replace(/[^a-z0-9]/g, '');
+
+    // 1. Exact match
+    const exact = registeredUsers.find((u) => u.name && u.name.toLowerCase().trim() === clean);
+    if (exact?.image) return exact.image;
+
+    // 2. Normalized match (ignoring spaces / special chars)
+    const normMatch = registeredUsers.find(
+      (u) => u.name && u.name.toLowerCase().replace(/[^a-z0-9]/g, '') === normalized
+    );
+    if (normMatch?.image) return normMatch.image;
+
+    // 3. Partial substring match (e.g. "Bhuvan" matches "Bhuvaneshwaran Alagudurai")
+    if (normalized.length >= 3) {
+      const partial = registeredUsers.find((u) => {
+        if (!u.name) return false;
+        const uNorm = u.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        return uNorm.includes(normalized) || normalized.includes(uNorm);
+      });
+      if (partial?.image) return partial.image;
+    }
+
+    return null;
+  };
+
   // When winner name changes, check if a registered user matches to suggest their photo
   const handleWinnerNameChange = (name: string) => {
     setWinnerName(name);
-    if (!winnerImage && name.trim()) {
-      const match = registeredUsers.find(
-        (u) => u.name && u.name.toLowerCase().trim() === name.toLowerCase().trim()
-      );
-      if (match?.image) {
-        setWinnerImage(match.image);
-      }
+    const matchedPhoto = findMatchingUserImage(name);
+    if (matchedPhoto) {
+      setWinnerImage(matchedPhoto);
     }
   };
 
   // When runner up name changes, check if a registered user matches to suggest their photo
   const handleRunnerUpNameChange = (name: string) => {
     setRunnerUpName(name);
-    if (!runnerUpImage && name.trim()) {
-      const match = registeredUsers.find(
-        (u) => u.name && u.name.toLowerCase().trim() === name.toLowerCase().trim()
-      );
-      if (match?.image) {
-        setRunnerUpImage(match.image);
-      }
+    const matchedPhoto = findMatchingUserImage(name);
+    if (matchedPhoto) {
+      setRunnerUpImage(matchedPhoto);
     }
   };
 
-  // File upload handler using /api/upload
+// Helper to convert any selected image file to an optimized, lightweight Base64 Data URL
+function fileToBase64(file: File, maxDim = 320): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Failed to read image file'));
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      const img = new Image();
+      img.onerror = () => resolve(dataUrl); // fallback to raw data url if decode fails
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > height) {
+          if (width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          }
+        } else {
+          if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(dataUrl);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      img.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// File upload handler using /api/upload with automatic Base64 fallback
   const handleFileUpload = async (file: File, type: 'winner' | 'runnerUp') => {
     const isWinner = type === 'winner';
     if (isWinner) setIsUploadingWinner(true);
     else setIsUploadingRunnerUp(true);
 
     try {
+      // 1. Try uploading to /api/upload first
       const formData = new FormData();
       formData.append('files', file);
 
@@ -112,22 +174,39 @@ export default function HallOfFameForm() {
         body: formData,
       });
 
-      if (!res.ok) {
-        throw new Error('Upload failed');
-      }
-
-      const data = await res.json();
-      if (data.attachments && data.attachments[0]?.storagePath) {
-        const url = data.attachments[0].storagePath;
-        if (isWinner) {
-          setWinnerImage(url);
-        } else {
-          setRunnerUpImage(url);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.attachments && data.attachments[0]?.storagePath) {
+          const url = data.attachments[0].storagePath;
+          if (isWinner) {
+            setWinnerImage(url);
+          } else {
+            setRunnerUpImage(url);
+          }
+          return;
         }
       }
+
+      // 2. Fall back seamlessly to client-side Base64 compression
+      const base64Url = await fileToBase64(file);
+      if (isWinner) {
+        setWinnerImage(base64Url);
+      } else {
+        setRunnerUpImage(base64Url);
+      }
     } catch (error) {
-      console.error('Photo upload error:', error);
-      alert('Failed to upload photo. You can also paste an image URL directly.');
+      console.warn('Upload error, attempting client-side base64 fallback:', error);
+      try {
+        const base64Url = await fileToBase64(file);
+        if (isWinner) {
+          setWinnerImage(base64Url);
+        } else {
+          setRunnerUpImage(base64Url);
+        }
+      } catch (fallbackError) {
+        console.error('Photo upload error:', fallbackError);
+        alert('Failed to process image file. You can also paste an image URL directly.');
+      }
     } finally {
       if (isWinner) setIsUploadingWinner(false);
       else setIsUploadingRunnerUp(false);
@@ -203,8 +282,8 @@ export default function HallOfFameForm() {
   };
 
   return (
-    <div className="bg-white dark:bg-[#111827] rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 p-6 mb-8 transition-colors">
-      <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100 dark:border-white/10">
+    <div className="glass-panel p-6 sm:p-7 mb-8 transition-colors">
+      <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/60 dark:border-white/10">
         <div>
           <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <span>🏆</span> Add / Edit Hall of Fame Entry
@@ -335,12 +414,17 @@ export default function HallOfFameForm() {
                     </div>
 
                     <input
-                      type="url"
-                      placeholder="Or paste profile image URL..."
+                      type="text"
+                      placeholder="Or paste profile image URL / Base64..."
                       value={winnerImage}
                       onChange={(e) => setWinnerImage(e.target.value)}
                       className="w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-xs focus:outline-none focus:ring-1 focus:ring-amber-500"
                     />
+                    {winnerImage.includes('teams.microsoft.com') && (
+                      <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1">
+                        ⚠️ Teams internal links require Microsoft authentication and will not load. Please click &quot;Upload Photo&quot; to select the photo file directly.
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -433,12 +517,17 @@ export default function HallOfFameForm() {
                     </div>
 
                     <input
-                      type="url"
-                      placeholder="Or paste profile image URL..."
+                      type="text"
+                      placeholder="Or paste profile image URL / Base64..."
                       value={runnerUpImage}
                       onChange={(e) => setRunnerUpImage(e.target.value)}
                       className="w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
+                    {runnerUpImage.includes('teams.microsoft.com') && (
+                      <p className="text-[11px] text-blue-600 dark:text-blue-400 mt-1">
+                        ⚠️ Teams internal links require Microsoft authentication and will not load. Please click &quot;Upload Photo&quot; to select the photo file directly.
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

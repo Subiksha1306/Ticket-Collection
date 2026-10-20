@@ -29,7 +29,7 @@ export default function ExportForm() {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 max-w-xl">
+    <div className="glass-panel p-6 sm:p-7 max-w-xl">
       <h2 className="text-lg font-bold text-gray-900 mb-4">Export Monthly Tickets</h2>
       <p className="text-gray-500 mb-6 text-sm">
         Select a month to export all submissions. The export will contain all details including the full description of each ticket in CSV format.

@@ -102,6 +102,35 @@ export async function POST(request: Request) {
       },
     });
 
+    // Also persist images into the users table so their photos auto-populate across the platform
+    try {
+      if (finalWinnerImage && winnerName) {
+        const winnerUser = await prisma.user.findFirst({
+          where: { name: { contains: winnerName.trim(), mode: 'insensitive' } },
+        });
+        if (winnerUser) {
+          await prisma.user.update({
+            where: { id: winnerUser.id },
+            data: { image: finalWinnerImage },
+          });
+        }
+      }
+
+      if (finalRunnerUpImage && runnerUpName) {
+        const runnerUpUser = await prisma.user.findFirst({
+          where: { name: { contains: runnerUpName.trim(), mode: 'insensitive' } },
+        });
+        if (runnerUpUser) {
+          await prisma.user.update({
+            where: { id: runnerUpUser.id },
+            data: { image: finalRunnerUpImage },
+          });
+        }
+      }
+    } catch (persistErr) {
+      console.warn('Failed to persist photo to user record:', persistErr);
+    }
+
     return NextResponse.json(entry);
   } catch (error) {
     console.error('Error saving Hall of Fame:', error);

@@ -54,8 +54,8 @@ export default async function MySubmissionsPage(props: {
 
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-white">
+      <div className="glass-panel overflow-hidden">
+        <div className="p-4 border-b border-white/60 dark:border-white/10 flex justify-between items-center bg-white/40 dark:bg-white/[0.02] backdrop-blur-md">
           <div className="relative max-w-xs w-full">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -68,8 +68,8 @@ export default async function MySubmissionsPage(props: {
           </div>
         </div>
 
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-white/60 dark:divide-white/10">
+          <thead className="bg-white/40 dark:bg-white/[0.03] backdrop-blur-md">
             <tr>
               <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Ticket Number</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Title</th>
@@ -81,7 +81,7 @@ export default async function MySubmissionsPage(props: {
               <th scope="col" className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-transparent divide-y divide-white/50 dark:divide-white/5">
             {submissions.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-6 py-8 text-center text-gray-500 text-sm">

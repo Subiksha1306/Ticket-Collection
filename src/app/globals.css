@@ -3,8 +3,12 @@
 @custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
 
 :root {
-  --bg: #e8edf4;
-  --glow: radial-gradient(60% 38% at 55% 0%, rgba(54,80,130,.55), rgba(54,80,130,0) 72%);
+  --bg: #e6ebf4;
+  --glow: 
+    radial-gradient(45% 40% at 20% 12%, rgba(147, 197, 253, 0.55), transparent 70%),
+    radial-gradient(50% 45% at 85% 15%, rgba(196, 181, 253, 0.45), transparent 75%),
+    radial-gradient(55% 50% at 50% 55%, rgba(165, 243, 252, 0.35), transparent 70%),
+    radial-gradient(65% 45% at 80% 85%, rgba(199, 210, 254, 0.35), transparent 75%);
   --primary: #3d5a8c;
   --primary-hover: #34507d;
   --text: #1a2438;
@@ -13,21 +17,30 @@
   --tint: #dfe7f5;
   --navy-glass: rgba(36,54,94,.88);
 
-  --glass-bg: rgba(255, 255, 255, 0.6);
-  --glass-fallback: rgba(255, 255, 255, 0.85);
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-fallback: rgba(255, 255, 255, 0.88);
   --glass-border: rgba(255, 255, 255, 0.85);
-  --glass-shadow: 0 8px 30px rgba(44, 66, 110, 0.08);
+  --glass-shadow: 0 8px 32px rgba(44, 66, 110, 0.08);
 
   --radius-card: 22px;
   --radius-input: 14px;
   --radius-row: 14px;
   --radius-pill: 9999px;
+
+  /* Custom Scrollbar */
+  --scroll-thumb: rgba(59, 81, 136, 0.35);
+  --scroll-thumb-hover: rgba(59, 81, 136, 0.7);
+  --scroll-firefox: #3b5188;
 }
 
 html.dark,
 [data-theme="dark"] {
   --bg: #090f1b;
-  --glow: radial-gradient(65% 44% at 55% 0%, rgba(38, 68, 122, 0.55), rgba(9, 15, 27, 0) 76%);
+  --glow: 
+    radial-gradient(50% 40% at 25% 12%, rgba(59, 130, 246, 0.22), transparent 70%),
+    radial-gradient(55% 45% at 85% 18%, rgba(139, 92, 246, 0.18), transparent 75%),
+    radial-gradient(60% 50% at 50% 60%, rgba(14, 165, 233, 0.15), transparent 75%),
+    radial-gradient(55% 45% at 75% 85%, rgba(99, 102, 241, 0.15), transparent 75%);
   --primary: #4e77b6;
   --primary-hover: #608cd0;
   --text: #f0f4fc;
@@ -36,10 +49,15 @@ html.dark,
   --tint: #142036;
   --navy-glass: rgba(14, 23, 41, 0.94);
 
-  --glass-bg: rgba(15, 24, 40, 0.72);
+  --glass-bg: rgba(14, 23, 40, 0.72);
   --glass-fallback: rgba(15, 24, 40, 0.94);
   --glass-border: rgba(255, 255, 255, 0.12);
   --glass-shadow: 0 10px 36px rgba(0, 0, 0, 0.5);
+
+  /* Custom Scrollbar Dark */
+  --scroll-thumb: rgba(180, 195, 230, 0.35);
+  --scroll-thumb-hover: rgba(180, 195, 230, 0.7);
+  --scroll-firefox: #5c7cb8;
 
   color-scheme: dark;
 }
@@ -58,12 +76,12 @@ body {
 /* Glass styling utilities */
 .glass-panel {
   background-color: var(--glass-bg);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-card);
   box-shadow: var(--glass-shadow);
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 @supports not (backdrop-filter: blur(1px)) {
@@ -74,6 +92,8 @@ body {
 
 .glass-row {
   background-color: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: var(--radius-row);
   transition: all 0.15s ease;
@@ -81,34 +101,88 @@ body {
 
 .glass-row:hover {
   background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 html.dark .glass-row,
 [data-theme="dark"] .glass-row {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 html.dark .glass-row:hover,
 [data-theme="dark"] .glass-row:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.08);
 }
 
-/* Night theme element adaptations */
-html.dark aside,
-[data-theme="dark"] aside {
-  background-color: rgba(14, 23, 40, 0.8) !important;
+/* Universal Glassmorphism for Containers & Cards */
+.bg-white.rounded-xl,
+.bg-white.rounded-2xl,
+.bg-white.rounded-lg,
+.bg-white.rounded-3xl,
+.bg-white.rounded-\[22px\],
+.bg-white.rounded-\[24px\],
+.card-glass {
+  background-color: rgba(255, 255, 255, 0.65) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border-color: rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 0 8px 32px rgba(44, 66, 110, 0.08) !important;
+}
+
+html.dark .bg-white.rounded-xl,
+html.dark .bg-white.rounded-2xl,
+html.dark .bg-white.rounded-lg,
+html.dark .bg-white.rounded-3xl,
+html.dark .bg-white.rounded-\[22px\],
+html.dark .bg-white.rounded-\[24px\],
+html.dark .card-glass,
+[data-theme="dark"] .bg-white.rounded-xl,
+[data-theme="dark"] .bg-white.rounded-2xl,
+[data-theme="dark"] .bg-white.rounded-lg,
+[data-theme="dark"] .bg-white.rounded-3xl,
+[data-theme="dark"] .bg-white.rounded-\[22px\],
+[data-theme="dark"] .bg-white.rounded-\[24px\],
+[data-theme="dark"] .card-glass {
+  background-color: rgba(14, 23, 40, 0.72) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.5) !important;
+  color: var(--text) !important;
+}
+
+/* Glass Tables */
+table thead {
+  background-color: rgba(255, 255, 255, 0.45) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+table thead th {
+  border-color: rgba(255, 255, 255, 0.6) !important;
+}
+
+table tbody {
+  background-color: transparent !important;
+}
+
+table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.45) !important;
 }
 
 html.dark table thead,
 [data-theme="dark"] table thead {
   background-color: rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
 }
 
 html.dark table thead th,
 [data-theme="dark"] table thead th {
   color: var(--text-3) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 html.dark table tbody,
@@ -130,6 +204,13 @@ html.dark table tbody tr:hover,
 html.dark table td,
 [data-theme="dark"] table td {
   border-color: rgba(255, 255, 255, 0.07) !important;
+}
+
+/* Night theme element adaptations */
+html.dark aside,
+[data-theme="dark"] aside {
+  background-color: rgba(14, 23, 40, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
 }
 
 html.dark .bg-white,
@@ -200,13 +281,55 @@ html.dark .text-gray-600,
   color: #a2b2cf !important;
 }
 
+/* Glass Inputs & Textareas */
+input.input-field,
+input[type="text"],
+input[type="url"],
+input[type="month"],
+textarea,
+select {
+  background-color: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 2px 8px rgba(44, 66, 110, 0.04);
+  transition: all 0.2s ease;
+}
+
+input.input-field:focus,
+input[type="text"]:focus,
+input[type="url"]:focus,
+input[type="month"]:focus,
+textarea:focus,
+select:focus {
+  background-color: rgba(255, 255, 255, 0.85);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(61, 90, 140, 0.15);
+}
+
 html.dark input,
 html.dark textarea,
 html.dark select,
 [data-theme="dark"] input,
 [data-theme="dark"] textarea,
 [data-theme="dark"] select {
+  background-color: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-color: rgba(255, 255, 255, 0.12);
   color: #f0f4fc !important;
+  box-shadow: none;
+}
+
+html.dark input:focus,
+html.dark textarea:focus,
+html.dark select:focus,
+[data-theme="dark"] input:focus,
+[data-theme="dark"] textarea:focus,
+[data-theme="dark"] select:focus {
+  background-color: rgba(255, 255, 255, 0.09);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(78, 119, 182, 0.25);
 }
 
 html.dark input::placeholder,
@@ -216,17 +339,37 @@ html.dark textarea::placeholder,
   color: #6e809e !important;
 }
 
-/* Awards Cards Night Theme */
+/* Awards Cards Frosted Glass */
+.winner-card {
+  background: linear-gradient(135deg, rgba(255, 253, 245, 0.8) 0%, rgba(251, 241, 204, 0.6) 100%) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border-color: rgba(240, 212, 134, 0.75) !important;
+  box-shadow: 0 8px 32px rgba(220, 167, 47, 0.12) !important;
+}
+
+.runnerup-card {
+  background: linear-gradient(135deg, rgba(248, 250, 254, 0.8) 0%, rgba(230, 239, 251, 0.6) 100%) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border-color: rgba(210, 226, 247, 0.75) !important;
+  box-shadow: 0 8px 32px rgba(78, 119, 182, 0.12) !important;
+}
+
 html.dark .winner-card,
 [data-theme="dark"] .winner-card {
-  background: linear-gradient(135deg, rgba(28, 22, 10, 0.95) 0%, rgba(42, 32, 14, 0.95) 100%) !important;
+  background: linear-gradient(135deg, rgba(28, 22, 10, 0.8) 0%, rgba(42, 32, 14, 0.8) 100%) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
   border-color: rgba(229, 169, 60, 0.35) !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 24px rgba(220, 167, 47, 0.12) !important;
 }
 
 html.dark .runnerup-card,
 [data-theme="dark"] .runnerup-card {
-  background: linear-gradient(135deg, rgba(16, 26, 42, 0.95) 0%, rgba(24, 38, 60, 0.95) 100%) !important;
+  background: linear-gradient(135deg, rgba(16, 26, 42, 0.8) 0%, rgba(24, 38, 60, 0.8) 100%) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
   border-color: rgba(90, 125, 168, 0.35) !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 24px rgba(78, 119, 182, 0.12) !important;
 }
@@ -429,4 +572,53 @@ html.dark .secondary-btn:hover,
 
 .font-papillon {
   font-family: var(--font-papillon), "Bodoni MT", Didot, "Didot LT STD", "Hoefler Text", Garamond, "Times New Roman", serif;
+}
+
+
+/* ==========================================================================
+   Custom Scrollbar Styles (Light & Dark Theme)
+   ========================================================================== */
+
+/* Firefox only (so Chromium/Edge can use the richer ::-webkit-scrollbar) */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scroll-firefox, #3b5188) transparent;
+  }
+}
+
+/* Chrome, Edge, Safari */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb {
+  background-color: var(--scroll-thumb, rgba(59, 81, 136, 0.35));
+  border-radius: 999px;
+  border: 3px solid transparent;   /* makes the thumb look slimmer and floating */
+  background-clip: content-box;
+}
+
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover,
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scroll-thumb-hover, rgba(59, 81, 136, 0.7));
+}
+
+/* Remove the up/down arrow buttons */
+html::-webkit-scrollbar-button,
+body::-webkit-scrollbar-button,
+*::-webkit-scrollbar-button {
+  display: none;
 }

@@ -59,7 +59,7 @@ export default function SettingsForm() {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 max-w-2xl">
+    <div className="glass-panel p-6 sm:p-7 max-w-2xl">
       <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
         <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
           <path d="M2 13h10v10H2V13zM14 2h8v10h-8V2zM2 2h10v9H2V2zm12 12h8v9h-8v-9z"/>

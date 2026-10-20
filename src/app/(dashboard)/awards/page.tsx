@@ -249,8 +249,8 @@ export default async function AwardsPage() {
       </div>
 
       {/* Past Winners Table */}
-      <div className="bg-white dark:bg-[#111827] rounded-2xl shadow-sm border border-gray-200 dark:border-white/10 overflow-hidden mt-8 transition-colors">
-        <div className="px-8 py-6 border-b border-gray-100 dark:border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="glass-panel overflow-hidden mt-8 transition-all">
+        <div className="px-8 py-6 border-b border-white/60 dark:border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 rounded-full bg-yellow-50 dark:bg-yellow-500/10 flex items-center justify-center text-yellow-500">
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H7v2h10v-2h-4v-3.1a5.01 5.01 0 003.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM7 10.82C5.84 10.4 5 9.3 5 8V7h2v3.82zM19 8c0 1.3-.84 2.4-2 2.82V7h2v1z" /></svg>
@@ -343,7 +343,7 @@ export default async function AwardsPage() {
         </div>
 
         {/* Footer */}
-        <div className="awards-footer bg-[#f8f9fc] dark:bg-white/[0.02] px-8 py-6 border-t border-gray-200 dark:border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="awards-footer bg-white/40 dark:bg-white/[0.02] backdrop-blur-md px-8 py-6 border-t border-white/60 dark:border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="font-serif italic text-gray-600 dark:text-gray-300 text-lg">
             &ldquo;Small ideas can make a big difference.&rdquo;
           </p>

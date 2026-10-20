@@ -54,19 +54,19 @@ export default async function AdminPage({
       </div>
 
       {/* Highlights / Live Summary */}
-      <section className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+      <section className="glass-panel p-6 sm:p-7">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Highlights & Live Summary</h2>
-            <p className="text-sm text-gray-500">View ticket submission counts for a specific month.</p>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Highlights & Live Summary</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">View ticket submission counts for a specific month.</p>
           </div>
           <AdminMonthPicker />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-gray-50 rounded-xl p-5 border border-gray-100 flex flex-col justify-center">
-            <div className="text-4xl font-black text-indigo-600 mb-2">{totalSubmissions}</div>
-            <div className="text-sm font-semibold text-gray-600 uppercase tracking-wider">Tickets Submitted</div>
+          <div className="glass-row p-5 flex flex-col justify-center">
+            <div className="text-4xl font-black text-indigo-600 dark:text-indigo-400 mb-2">{totalSubmissions}</div>
+            <div className="text-sm font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Tickets Submitted</div>
           </div>
         </div>
       </section>

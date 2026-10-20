@@ -134,44 +134,44 @@ export default async function ManagerDashboardPage({
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1 */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-          <h3 className="text-[15px] font-medium text-gray-700">Awaiting my review</h3>
-          <div className="text-3xl font-bold text-gray-900 mt-2">{pendingSubmissions.length}</div>
-          <div className="text-[13px] text-red-600 mt-1 font-medium">{overdueCount} overdue</div>
+        <div className="glass-panel p-5">
+          <h3 className="text-[15px] font-medium text-gray-700 dark:text-gray-300">Awaiting my review</h3>
+          <div className="text-3xl font-bold text-gray-900 dark:text-white mt-2">{pendingSubmissions.length}</div>
+          <div className="text-[13px] text-red-600 dark:text-red-400 mt-1 font-medium">{overdueCount} overdue</div>
         </div>
         {/* Card 2 */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-          <h3 className="text-[15px] font-medium text-gray-700">Avg. time to decision</h3>
-          <div className="text-3xl font-bold text-gray-900 mt-2">4.2 days</div>
-          <div className="text-[13px] text-green-600 mt-1 font-medium">down 1.1 vs last month</div>
+        <div className="glass-panel p-5">
+          <h3 className="text-[15px] font-medium text-gray-700 dark:text-gray-300">Avg. time to decision</h3>
+          <div className="text-3xl font-bold text-gray-900 dark:text-white mt-2">4.2 days</div>
+          <div className="text-[13px] text-green-600 dark:text-green-400 mt-1 font-medium">down 1.1 vs last month</div>
         </div>
         {/* Card 3 */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-          <h3 className="text-[15px] font-medium text-gray-700">Implementation rate</h3>
-          <div className="text-3xl font-bold text-gray-900 mt-2">{implementationRate}%</div>
-          <div className="text-[13px] text-gray-500 mt-1 font-medium">{countImplemented} of {countApproved} approved</div>
+        <div className="glass-panel p-5">
+          <h3 className="text-[15px] font-medium text-gray-700 dark:text-gray-300">Implementation rate</h3>
+          <div className="text-3xl font-bold text-gray-900 dark:text-white mt-2">{implementationRate}%</div>
+          <div className="text-[13px] text-gray-500 dark:text-gray-400 mt-1 font-medium">{countImplemented} of {countApproved} approved</div>
         </div>
         {/* Card 4 */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-          <h3 className="text-[15px] font-medium text-gray-700">Impact verified</h3>
-          <div className="text-3xl font-bold text-gray-900 mt-2">{impactVerifiedRate}%</div>
-          <div className="text-[13px] text-gray-500 mt-1 font-medium">{countImpactVerified} of {countImplemented} implemented</div>
+        <div className="glass-panel p-5">
+          <h3 className="text-[15px] font-medium text-gray-700 dark:text-gray-300">Impact verified</h3>
+          <div className="text-3xl font-bold text-gray-900 dark:text-white mt-2">{impactVerifiedRate}%</div>
+          <div className="text-[13px] text-gray-500 dark:text-gray-400 mt-1 font-medium">{countImpactVerified} of {countImplemented} implemented</div>
         </div>
       </div>
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Funnel */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col">
-          <h3 className="text-base font-bold text-gray-900 mb-6">Pipeline with drop-off</h3>
+        <div className="glass-panel p-6 flex flex-col">
+          <h3 className="text-base font-bold text-gray-900 dark:text-white mb-6">Pipeline with drop-off</h3>
           <div className="flex-1 flex flex-col justify-center">
             {funnelRows.map(row => (
               <div key={row.label} className="flex items-center gap-3 mb-3 text-sm">
-                <div className="w-24 text-gray-700 font-medium">{row.label}</div>
-                <div className="flex-1 h-7 bg-gray-50 rounded-sm overflow-hidden flex items-center">
-                  <div className={`h-full ${row.color} transition-all`} style={{ width: `${(row.value / maxFunnel) * 100}%` }}></div>
+                <div className="w-24 text-gray-700 dark:text-gray-300 font-medium">{row.label}</div>
+                <div className="flex-1 h-7 bg-white/40 dark:bg-white/5 rounded-md overflow-hidden flex items-center p-0.5 border border-white/60 dark:border-white/10">
+                  <div className={`h-full ${row.color} rounded-sm transition-all`} style={{ width: `${(row.value / maxFunnel) * 100}%` }}></div>
                 </div>
-                <div className="w-6 text-right font-semibold text-gray-900">{row.value}</div>
+                <div className="w-6 text-right font-semibold text-gray-900 dark:text-white">{row.value}</div>
               </div>
             ))}
           </div>
@@ -179,24 +179,24 @@ export default async function ManagerDashboardPage({
         </div>
 
         {/* Stacked Bar Chart */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col">
-          <h3 className="text-base font-bold text-gray-900 mb-6">Submissions per month, by category</h3>
+        <div className="glass-panel p-6 flex flex-col">
+          <h3 className="text-base font-bold text-gray-900 dark:text-white mb-6">Submissions per month, by category</h3>
           <div className="flex-1 flex items-end justify-around relative px-4 pt-4 pb-8 min-h-[160px]">
             
             {chartMonths.map((m, i) => (
               <div key={i} className="flex flex-col items-center gap-2 w-20 h-full justify-end relative z-10">
-                <div className="w-full flex flex-col-reverse" style={{ height: `${(m.total / maxMonthTotal) * 100}%` }}>
+                <div className="w-full flex flex-col-reverse rounded-t-md overflow-hidden" style={{ height: `${(m.total / maxMonthTotal) * 100}%` }}>
                   {m.cat1 > 0 && <div className="w-full bg-blue-200" style={{ height: `${(m.cat1 / m.total) * 100}%` }}></div>}
                   {m.cat2 > 0 && <div className="w-full bg-green-200" style={{ height: `${(m.cat2 / m.total) * 100}%` }}></div>}
                   {m.cat3 > 0 && <div className="w-full bg-[#fde68a]" style={{ height: `${(m.cat3 / m.total) * 100}%` }}></div>}
                 </div>
-                <div className="absolute -bottom-6 text-sm text-gray-600 font-medium">{m.label}</div>
+                <div className="absolute -bottom-6 text-sm text-gray-600 dark:text-gray-400 font-medium">{m.label}</div>
               </div>
             ))}
             {/* Axis line */}
-            <div className="absolute bottom-6 left-0 right-0 h-px bg-gray-200 z-0"></div>
+            <div className="absolute bottom-6 left-0 right-0 h-px bg-white/60 dark:bg-white/10 z-0"></div>
           </div>
-          <div className="flex items-center gap-4 text-[12px] text-gray-500 mt-3 justify-center">
+          <div className="flex items-center gap-4 text-[12px] text-gray-500 dark:text-gray-400 mt-3 justify-center">
             <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm bg-blue-200"></div>Process Improvement</div>
             <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm bg-green-200"></div>Automation</div>
             <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm bg-[#fde68a]"></div>Other</div>
@@ -205,7 +205,7 @@ export default async function ManagerDashboardPage({
       </div>
 
       {/* Review Queue Table */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="glass-panel overflow-hidden">
         <div className="px-6 py-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h3 className="text-base font-bold text-gray-900">Review queue</h3>
           <div className="flex items-center gap-2 text-sm font-medium">

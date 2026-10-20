@@ -86,8 +86,8 @@ export default async function SubmissionDetailsPage({ params }: { params: Promis
 
       <div className="flex gap-6 items-start">
         <main className="flex-1 space-y-6">
-          <div className="bg-white dark:bg-[rgba(15,24,40,0.72)] rounded-2xl p-6 sm:p-8 border border-gray-100 dark:border-white/10 shadow-sm backdrop-blur-md">
-            <div className="flex flex-wrap items-center gap-8 mb-6 pb-6 border-b border-gray-100 dark:border-white/10">
+          <div className="glass-panel p-6 sm:p-8">
+            <div className="flex flex-wrap items-center gap-8 mb-6 pb-6 border-b border-white/60 dark:border-white/10">
               <div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold mb-1">Created by</div>
                 <div className="flex items-center gap-2">
@@ -207,7 +207,7 @@ export default async function SubmissionDetailsPage({ params }: { params: Promis
         </main>
 
         <aside className="w-80 flex-shrink-0">
-          <div className="bg-white dark:bg-[rgba(15,24,40,0.72)] rounded-2xl p-5 border border-gray-100 dark:border-white/10 shadow-sm backdrop-blur-md">
+          <div className="glass-panel p-5">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-bold text-gray-900 dark:text-gray-100">Version History</h3>
             </div>
