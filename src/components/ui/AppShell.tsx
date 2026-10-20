@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
+import FrsionCanvasDecor from '@/components/ui/FrsionCanvasDecor';
+import TechxleAsciiLogo from '@/components/ui/TechxleAsciiLogo';
 
 interface AppShellProps {
   userName?: string | null;
@@ -261,7 +263,7 @@ export const AppShell: React.FC<AppShellProps> = ({
   const initial = (displayName.charAt(0) || 'U').toUpperCase();
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] relative overflow-x-hidden text-[var(--text)] font-sans antialiased selection:bg-[var(--primary)] selection:text-white">
+    <div className="min-h-screen bg-[var(--canvas-bg)] relative overflow-x-hidden text-[var(--text)] font-sans antialiased selection:bg-[var(--primary)] selection:text-white transition-colors duration-300">
       {/* Background Radial Glow */}
       <div
         className="fixed inset-0 pointer-events-none z-0"
@@ -269,14 +271,22 @@ export const AppShell: React.FC<AppShellProps> = ({
         aria-hidden="true"
       />
 
+      {/* Techxle ASCII / Halftone Logo merging into canvas background */}
+      <div
+        className="fixed -top-12 -right-16 md:right-0 lg:right-4 w-[620px] md:w-[780px] lg:w-[920px] max-w-[65vw] h-auto pointer-events-none z-0 select-none opacity-[0.16] dark:opacity-[0.20] text-[#2c426e] dark:text-sky-300 transition-opacity duration-500"
+        aria-hidden="true"
+      >
+        <TechxleAsciiLogo variant="emblem" fadeDirection="left" showAsciiText={true} />
+      </div>
+
+      {/* 3D Decorative Orbs & Glass Elements matching FrsionOS */}
+      <FrsionCanvasDecor />
+
       {/* Main Page Container with 20px padding */}
-      <div className="relative z-10 p-4 sm:p-5 min-h-screen flex gap-5 max-w-[1600px] mx-auto">
+      <div className="relative z-10 p-4 sm:p-6 min-h-screen flex gap-6 max-w-[1600px] mx-auto">
         {/* Floating Glass Sidebar (Desktop) */}
         <aside
-          className="w-[240px] shrink-0 hidden lg:flex flex-col rounded-[24px] bg-white/65 backdrop-blur-[18px] border border-white/85 shadow-[0_8px_30px_rgba(44,66,110,0.08)] p-5 h-[calc(100vh-40px)] sticky top-5"
-          style={{
-            WebkitBackdropFilter: 'blur(18px)',
-          }}
+          className="w-[240px] shrink-0 hidden lg:flex flex-col master-acrylic-canvas p-5 h-[calc(100vh-48px)] sticky top-6 z-20"
         >
           <SidebarView
             mainNav={mainNav}
@@ -294,7 +304,7 @@ export const AppShell: React.FC<AppShellProps> = ({
             onClick={() => setMobileMenuOpen(false)}
           >
             <div
-              className="w-[280px] h-full bg-white/90 backdrop-blur-[24px] border-r border-white/80 p-5 shadow-2xl flex flex-col"
+              className="w-[280px] h-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-[24px] border-r border-white/80 dark:border-white/10 p-5 shadow-2xl flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-end mb-2">
@@ -329,7 +339,7 @@ export const AppShell: React.FC<AppShellProps> = ({
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(true)}
-                className="lg:hidden p-2.5 rounded-full bg-white/60 backdrop-blur-md border border-white/80 text-[var(--text-2)] hover:text-[var(--text)] shadow-sm"
+                className="lg:hidden p-2.5 rounded-full bg-white/60 dark:bg-white/10 backdrop-blur-md border border-white/80 dark:border-white/15 text-[var(--text-2)] hover:text-[var(--text)] shadow-sm"
                 aria-label="Open menu"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -348,7 +358,7 @@ export const AppShell: React.FC<AppShellProps> = ({
                 onClick={toggleTheme}
                 aria-label={theme === 'dark' ? 'Switch to daylight theme' : 'Switch to night theme'}
                 title={theme === 'dark' ? 'Switch to daylight theme' : 'Switch to night theme'}
-                className="flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-white/60 dark:bg-white/10 backdrop-blur-md border border-white/80 dark:border-white/15 text-[var(--text)] hover:text-[var(--primary)] shadow-[0_2px_8px_rgba(44,66,110,0.06)] hover:shadow-md transition-all active:scale-95 text-xs font-semibold select-none group focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]/40"
+                className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/60 dark:bg-white/10 backdrop-blur-md border border-white/80 dark:border-white/15 text-[var(--text)] hover:text-[var(--primary)] shadow-[0_2px_8px_rgba(44,66,110,0.06)] hover:shadow-md transition-all active:scale-95 text-xs font-semibold select-none group focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]/40"
               >
                 {theme === 'dark' ? (
                   <>
@@ -370,15 +380,15 @@ export const AppShell: React.FC<AppShellProps> = ({
               <button
                 type="button"
                 onClick={handleSignOut}
-                className="px-6 py-2.5 rounded-full bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white text-sm font-semibold shadow-[0_4px_14px_rgba(61,90,140,0.25)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]/40 active:scale-95"
+                className="frsion-pill-dark"
               >
                 Sign out
               </button>
             </div>
           </header>
 
-          {/* Page Body */}
-          <main className="flex-1 flex flex-col gap-6">
+          {/* Page Body inside Master Acrylic Glass Canvas */}
+          <main className="flex-1 flex flex-col gap-6 master-acrylic-canvas p-6 sm:p-8">
             {children}
           </main>
         </div>

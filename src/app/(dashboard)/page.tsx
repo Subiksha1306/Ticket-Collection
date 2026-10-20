@@ -5,6 +5,7 @@ import WinnersBanner from '@/components/WinnersBanner';
 import GlassCard from '@/components/ui/GlassCard';
 import Badge from '@/components/ui/Badge';
 import DataTable, { Column } from '@/components/ui/DataTable';
+import TechxleAsciiLogo from '@/components/ui/TechxleAsciiLogo';
 
 export default async function Dashboard() {
   const session = await getSession();
@@ -113,24 +114,41 @@ export default async function Dashboard() {
     : (session.user?.email ? session.user.email.split('@')[0] : 'User');
 
   return (
-    <div className="space-y-6">
-      {/* Welcome Heading matching reference */}
-      <div>
-        <h1 className="text-2xl sm:text-[32px] font-bold text-[var(--text)] tracking-tight leading-tight">
-          Welcome back, {firstName}
-        </h1>
-        <p className="text-sm sm:text-base text-[var(--text-2)] mt-1 font-normal">
-          Here's a quick overview of your recent tickets.
-        </p>
+    <div className="space-y-6 relative">
+      {/* Welcome Heading with Techxle ASCII Logo merging across the upper right */}
+      <div className="relative pt-2 pb-1 overflow-visible">
+        <div className="relative z-10 max-w-lg">
+          <h1 className="text-2xl sm:text-[32px] font-bold text-[var(--text)] tracking-tight leading-tight">
+            Welcome back, {firstName}
+          </h1>
+          <p className="text-sm sm:text-base text-[var(--text-2)] mt-1 font-normal">
+            Here's a quick overview of your recent tickets.
+          </p>
+        </div>
+
+        {/* Ambient Techxle ASCII Logo with ASCII Values merging from right to left */}
+        <div 
+          className="absolute -top-12 sm:-top-16 right-[-10px] sm:right-2 lg:right-6 w-[340px] sm:w-[460px] md:w-[540px] lg:w-[620px] pointer-events-none z-0 select-none text-[#2c426e] dark:text-sky-300 opacity-60 dark:opacity-65 transition-all duration-300"
+          aria-hidden="true"
+        >
+          <TechxleAsciiLogo 
+            variant="emblem" 
+            fadeDirection="left" 
+            renderMode="hybrid"
+            showAsciiValues={true}
+          />
+        </div>
       </div>
 
       {/* Navy Glass Winners Banner */}
       {settings?.bannerText && (
-        <WinnersBanner text={settings.bannerText} />
+        <div className="relative z-10">
+          <WinnersBanner text={settings.bannerText} />
+        </div>
       )}
 
       {/* Two Action Cards matching reference */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 relative z-10">
         <Link href="/submissions/new" className="group block focus:outline-none">
           <GlassCard className="p-6 transition-all duration-200 group-hover:-translate-y-0.5 group-hover:bg-white/70 group-hover:shadow-[0_12px_36px_rgba(44,66,110,0.12)]">
             <div className="flex items-center gap-4">
@@ -173,7 +191,7 @@ export default async function Dashboard() {
       </div>
 
       {/* Recent Submissions Section matching reference */}
-      <GlassCard className="p-6 sm:p-7">
+      <GlassCard className="p-6 sm:p-7 relative z-10">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base sm:text-lg font-bold text-[var(--text)] tracking-tight">
             Recent submissions

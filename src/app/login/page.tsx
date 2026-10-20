@@ -1,6 +1,6 @@
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import LoginButton from '@/components/LoginButton';
+import LoginFormCard from '@/components/LoginFormCard';
 
 export default async function LoginPage() {
   const session = await getSession();
@@ -9,51 +9,66 @@ export default async function LoginPage() {
   }
 
   return (
-    <div className="flex h-screen bg-white">
-      {/* Left Pane - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[#1A1D2D] relative overflow-hidden flex-col justify-center px-16">
-        <div className="absolute inset-0 z-0 opacity-20 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-blue-700 via-purple-800 to-[#1A1D2D]"></div>
-        
-        <div className="relative z-10 text-white max-w-md">
+    <div className="min-h-screen relative flex items-center justify-center p-4 sm:p-6 lg:p-10 overflow-hidden bg-[#c9d4e2] dark:bg-[#070b14] transition-colors duration-500">
+      {/* Layer 1: Atmospheric Misty Landscape Gradient */}
+      <div 
+        className="absolute inset-0 pointer-events-none z-0 bg-gradient-to-b from-[#b8c8dc] via-[#c5d3e4] to-[#a8b9cd] dark:from-[#0b1220] dark:via-[#080d17] dark:to-[#04070d]"
+        aria-hidden="true"
+      />
 
+      {/* Layer 2: Misty Morning Fog Radial Gradients */}
+      <div 
+        className="absolute inset-0 pointer-events-none z-0 opacity-70 dark:opacity-40"
+        style={{
+          backgroundImage: `
+            radial-gradient(circle at 50% 15%, rgba(255, 255, 255, 0.7), transparent 60%),
+            radial-gradient(circle at 10% 40%, rgba(180, 200, 225, 0.6), transparent 50%),
+            radial-gradient(circle at 85% 60%, rgba(190, 210, 235, 0.5), transparent 55%),
+            radial-gradient(circle at 50% 90%, rgba(140, 165, 195, 0.5), transparent 60%)
+          `
+        }}
+        aria-hidden="true"
+      />
 
-          <h1 className="text-5xl font-bold leading-tight mb-6">
-            Data Collection Portal
-          </h1>
-          <p className="text-xl text-gray-300 font-light mb-12">
-            Securely collect and preserve ticket information in one place.
-          </p>
-
-          <div className="flex items-center gap-3 text-sm text-gray-400">
-            <svg className="w-5 h-5 text-[var(--primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-            Authorized Techxle users only
-          </div>
-        </div>
+      {/* Layer 3: Subtle Distant Mountain & Pine Silhouettes matching the moody misty forest landscape */}
+      <div className="absolute inset-x-0 bottom-0 h-[45vh] pointer-events-none z-0 opacity-25 dark:opacity-20 select-none overflow-hidden" aria-hidden="true">
+        <svg 
+          viewBox="0 0 1440 320" 
+          fill="none" 
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-full h-full object-cover text-slate-600 dark:text-slate-400"
+          preserveAspectRatio="none"
+        >
+          {/* Far Ridge */}
+          <path 
+            d="M0 160L80 145C160 130 320 100 480 120C640 140 800 210 960 215C1120 220 1280 160 1360 130L1440 100V320H1360C1280 320 1120 320 960 320C800 320 640 320 480 320C320 320 160 320 80 320H0V160Z" 
+            fill="currentColor" 
+            opacity="0.35"
+          />
+          {/* Mid Ridge */}
+          <path 
+            d="M0 220L60 205C120 190 240 160 360 175C480 190 600 250 720 255C840 260 960 210 1080 190C1200 170 1320 180 1380 185L1440 190V320H0V220Z" 
+            fill="currentColor" 
+            opacity="0.5"
+          />
+          {/* Near Pine Silhouette Wave */}
+          <path 
+            d="M0 270C120 260 240 240 360 250C480 260 600 290 720 295C840 300 960 270 1080 265C1200 260 1320 270 1440 275V320H0V270Z" 
+            fill="currentColor" 
+            opacity="0.75"
+          />
+        </svg>
       </div>
 
-      {/* Right Pane - Login Form */}
-      <div className="flex-1 flex flex-col justify-center px-8 sm:px-16 lg:px-24">
-        <div className="max-w-md w-full mx-auto">
-          <div className="text-center mb-10">
-            <span className="font-papillon text-[44px] tracking-[0.05em] text-[var(--text)] select-none block mb-4 leading-none">
-              Impact<span className="text-[var(--primary)]">X</span>
-            </span>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome back</h2>
-            <p className="text-gray-500">Sign in with your Techxle account to continue.</p>
-          </div>
+      {/* Layer 4: Floating Atmospheric Mist Sheet */}
+      <div 
+        className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#a8b9cd]/80 via-[#c5d3e4]/40 to-transparent dark:from-[#04070d]/90 dark:via-[#080d17]/50 dark:to-transparent pointer-events-none z-0 backdrop-blur-[2px]" 
+        aria-hidden="true"
+      />
 
-          <div className="space-y-6">
-            <LoginButton />
-          </div>
-
-          <div className="mt-8 pt-8 border-t border-gray-100">
-            <p className="text-sm text-gray-500 text-center">
-              Only authorized Techxle users can access this portal. If you need access, please contact IT support.
-            </p>
-          </div>
-        </div>
+      {/* Layer 5: The Center Floating Acrylic Login Card */}
+      <div className="relative z-10 w-full max-w-5xl my-auto">
+        <LoginFormCard />
       </div>
     </div>
   );
