@@ -1,14 +1,15 @@
+import { cache } from 'react';
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 
-export async function getSession() {
+export const getSession = cache(async () => {
   try {
     return await getServerSession(authOptions)
   } catch (error) {
     console.error("Session retrieval error (likely invalid old cookie):", error);
     return null;
   }
-}
+});
 
 export const ADMIN_EMAILS = [
   'arun@techxle.com',

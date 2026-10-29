@@ -12,22 +12,26 @@ export default async function AwardsPage() {
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  // Fetch live summary data
-  const totalSubmissionsThisMonth = await prisma.submission.count({
-    where: {
-      createdAt: {
-        gte: startOfMonth
+  // Fetch live summary data, historical Hall of Fame, and users with images concurrently
+  const [totalSubmissionsThisMonth, historicalHallOfFame, usersWithImage] = await Promise.all([
+    prisma.submission.count({
+      where: {
+        createdAt: {
+          gte: startOfMonth
+        }
       }
-    }
-  });
-
-  // Fetch Historical Hall of Fame
-  const historicalHallOfFame = await prisma.hallOfFame.findMany({
-    orderBy: [
-      { year: 'desc' },
-      { month: 'desc' }
-    ]
-  });
+    }),
+    prisma.hallOfFame.findMany({
+      orderBy: [
+        { year: 'desc' },
+        { month: 'desc' }
+      ]
+    }),
+    prisma.user.findMany({
+      where: { image: { not: null } },
+      select: { name: true, image: true },
+    })
+  ]);
 
   const getMonthName = (monthNum: number) => {
     const date = new Date(2000, monthNum - 1, 1);
@@ -37,12 +41,6 @@ export default async function AwardsPage() {
   const mostRecentWinner = historicalHallOfFame[0];
   const winnerName = mostRecentWinner?.winnerName || 'TBD';
   const runnerUpName = mostRecentWinner?.runnerUpName || 'TBD';
-
-  // Fetch registered users with images to resolve profile pictures for any winner/runner-up
-  const usersWithImage = await prisma.user.findMany({
-    where: { image: { not: null } },
-    select: { name: true, image: true },
-  });
 
   const getUserImage = (name: string, directImage?: string | null) => {
     if (directImage) return directImage;

@@ -8,8 +8,9 @@ export default withAuth({
     authorized: ({ token }) => !!token
   }
 })
+
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$|api/auth).*)',
+    '/((?!api/auth|_next/static|_next/image|favicon.ico|icon.png|login|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

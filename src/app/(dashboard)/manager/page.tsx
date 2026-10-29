@@ -30,13 +30,33 @@ export default async function ManagerDashboardPage({
     endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
   }
 
-  const pipelineData = await prisma.submission.groupBy({
-    by: ['status'],
-    where: {
-      createdAt: { gte: startOfMonth, lte: endOfMonth }
-    },
-    _count: { id: true }
-  });
+  const threeMonthsAgoStart = new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() - 2, 1);
+
+  const [pipelineData, pendingSubmissions, chartSubmissions] = await Promise.all([
+    prisma.submission.groupBy({
+      by: ['status'],
+      where: {
+        createdAt: { gte: startOfMonth, lte: endOfMonth }
+      },
+      _count: { id: true }
+    }),
+    prisma.submission.findMany({
+      where: {
+        status: 'Under Review',
+      },
+      include: {
+        author: true,
+        versions: { orderBy: { versionNumber: 'desc' }, take: 1 }
+      },
+      orderBy: { createdAt: 'asc' }
+    }),
+    prisma.submission.findMany({
+      where: {
+        createdAt: { gte: threeMonthsAgoStart, lte: endOfMonth }
+      },
+      select: { createdAt: true, category: true }
+    })
+  ]);
 
   const getStatusCount = (statusName: string) => {
     return pipelineData.find(p => p.status === statusName)?._count.id || 0;
@@ -47,17 +67,6 @@ export default async function ManagerDashboardPage({
   const countApproved = getStatusCount('Approved');
   const countImplemented = getStatusCount('Implemented');
   const countImpactVerified = getStatusCount('Impact Verified');
-
-  const pendingSubmissions = await prisma.submission.findMany({
-    where: {
-      status: 'Under Review',
-    },
-    include: {
-      author: true,
-      versions: { orderBy: { versionNumber: 'desc' }, take: 1 }
-    },
-    orderBy: { createdAt: 'asc' }
-  });
 
   // Calculate overdue (older than 7 days)
   const overdueCount = pendingSubmissions.filter(s => {
@@ -76,14 +85,6 @@ export default async function ManagerDashboardPage({
     { label: 'Verified', value: countImpactVerified, color: 'bg-green-200' },
   ];
   const maxFunnel = Math.max(...funnelRows.map(r => r.value), 1);
-
-  const threeMonthsAgoStart = new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() - 2, 1);
-  const chartSubmissions = await prisma.submission.findMany({
-    where: {
-      createdAt: { gte: threeMonthsAgoStart, lte: endOfMonth }
-    },
-    select: { createdAt: true, category: true }
-  });
 
   const chartMonths = [];
   let maxMonthTotal = 0;

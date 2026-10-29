@@ -16,23 +16,24 @@ export default async function Dashboard() {
   const userId = (session.user as any).id;
   const userIsAdmin = isAdmin(session.user.email);
 
-  const submissions = await prisma.submission.findMany({
-    where: userIsAdmin ? undefined : { createdBy: userId },
-    orderBy: { createdAt: 'desc' },
-    take: 5,
-    include: {
-      author: true,
-      versions: {
-        where: { isActive: true },
-        take: 1
+  const [submissions, settings] = await Promise.all([
+    prisma.submission.findMany({
+      where: userIsAdmin ? undefined : { createdBy: userId },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      include: {
+        author: true,
+        versions: {
+          where: { isActive: true },
+          take: 1
+        }
       }
-    }
-  });
-
-  const settings = await prisma.systemSettings.findUnique({
-    where: { id: 'global' },
-    select: { bannerText: true }
-  });
+    }),
+    prisma.systemSettings.findUnique({
+      where: { id: 'global' },
+      select: { bannerText: true }
+    })
+  ]);
 
   // Table columns matching reference screenshot
   type SubmissionRow = typeof submissions[number];

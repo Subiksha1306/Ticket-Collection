@@ -6,16 +6,28 @@ const defaultDatabaseUrl =
   'postgresql://postgres:postgres@localhost:5432/postgres?schema=public';
 const connectionString =
   process.env.DATABASE_URL ?? process.env.DIRECT_URL ?? defaultDatabaseUrl;
-const pool = new Pool({ connectionString });
+
+declare const globalThis: {
+  prismaGlobal?: PrismaClient;
+  pgPoolGlobal?: Pool;
+} & typeof global;
+
+const pool = globalThis.pgPoolGlobal ?? new Pool({
+  connectionString,
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 5000,
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  globalThis.pgPoolGlobal = pool;
+}
+
 const adapter = new PrismaPg(pool);
 
 const prismaClientSingleton = () => {
   return new PrismaClient({ adapter })
 }
-
-declare const globalThis: {
-  prismaGlobal: ReturnType<typeof prismaClientSingleton>;
-} & typeof global;
 
 const prisma = globalThis.prismaGlobal ?? prismaClientSingleton()
 
