@@ -77,7 +77,7 @@ body::before {
   z-index: -1;
   background-image: var(--glow);
   background-repeat: no-repeat;
-  pointer-events-none;
+  pointer-events: none;
   transform: translateZ(0);
 }
 
