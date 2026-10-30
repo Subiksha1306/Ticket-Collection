@@ -258,25 +258,90 @@ function fileToBase64(file: File, maxDim = 320): Promise<string> {
     }
   };
 
-  const handleClear = async () => {
+  const [historyModalOpen, setHistoryModalOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const getMonthName = (monthNum: number) => {
+    const date = new Date(2000, monthNum - 1, 1);
+    return date.toLocaleString('default', { month: 'long' });
+  };
+
+  const sortedEntries = [...existingEntries].sort((a, b) => {
+    if (b.year !== a.year) return b.year - a.year;
+    return b.month - a.month;
+  });
+
+  const handleSelectEntryToEdit = (entry: HallOfFameEntry) => {
+    const monthStr = `${entry.year}-${String(entry.month).padStart(2, '0')}`;
+    setMonth(monthStr);
+    setWinnerName(entry.winnerName || '');
+    setRunnerUpName(entry.runnerUpName || '');
+    setWinnerImage(entry.winnerImage || '');
+    setRunnerUpImage(entry.runnerUpImage || '');
+    setHistoryModalOpen(false);
+  };
+
+  const handleClearMonth = async (entry: HallOfFameEntry) => {
+    const label = `${getMonthName(entry.month)} ${entry.year}`;
     if (
       !confirm(
-        'Are you sure you want to completely erase the Hall of Fame history? This cannot be undone.'
+        `Are you sure you want to clear the Hall of Fame record for ${label}? This cannot be undone.`
       )
-    )
+    ) {
       return;
+    }
+
     try {
-      const res = await fetch('/api/hall-of-fame', { method: 'DELETE' });
+      setDeletingId(entry.id);
+      const res = await fetch(`/api/hall-of-fame?id=${entry.id}`, {
+        method: 'DELETE',
+      });
       if (!res.ok) throw new Error('Failed to delete');
+
+      setExistingEntries((prev) => prev.filter((e) => e.id !== entry.id));
+
+      const currentMonthKey = `${entry.year}-${String(entry.month).padStart(2, '0')}`;
+      if (month === currentMonthKey) {
+        setWinnerName('');
+        setWinnerImage('');
+        setRunnerUpName('');
+        setRunnerUpImage('');
+      }
+
+      router.refresh();
+      alert(`Hall of Fame record for ${label} cleared successfully!`);
+    } catch (error) {
+      console.error(error);
+      alert('Failed to delete month record. Please try again.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (
+      !confirm(
+        'Are you sure you want to completely erase ALL Hall of Fame history? This will delete all monthly records and cannot be undone.'
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/hall-of-fame?all=true', { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete all');
+
       setExistingEntries([]);
       setMonth('');
       setWinnerName('');
       setWinnerImage('');
       setRunnerUpName('');
       setRunnerUpImage('');
+      setHistoryModalOpen(false);
       router.refresh();
-      alert('Hall of Fame history erased successfully!');
+      alert('All Hall of Fame history erased successfully!');
     } catch (error) {
+      console.error(error);
       alert('Failed to erase history.');
     }
   };
@@ -294,10 +359,18 @@ function fileToBase64(file: File, maxDim = 320): Promise<string> {
         </div>
         <button
           type="button"
-          onClick={handleClear}
-          className="text-xs font-semibold text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 bg-red-50 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-900/40 px-3 py-1.5 rounded-lg transition-colors border border-red-200 dark:border-red-900/50"
+          onClick={() => setHistoryModalOpen(true)}
+          className="text-xs font-semibold text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 bg-red-50 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-900/40 px-3.5 py-1.5 rounded-lg transition-colors border border-red-200 dark:border-red-900/50 flex items-center gap-1.5 shadow-xs cursor-pointer"
         >
-          Clear History
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>History &amp; Clear</span>
+          {existingEntries.length > 0 && (
+            <span className="ml-0.5 px-1.5 py-0.2 rounded-full bg-red-200/70 dark:bg-red-900/60 text-red-800 dark:text-red-200 text-[10px] font-bold">
+              {existingEntries.length}
+            </span>
+          )}
         </button>
       </div>
 
@@ -557,6 +630,153 @@ function fileToBase64(file: File, maxDim = 320): Promise<string> {
           </button>
         </div>
       </form>
+
+      {/* History Modal */}
+      {historyModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-150"
+          onClick={() => setHistoryModalOpen(false)}
+        >
+          <div
+            className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[85vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50">
+              <div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <span>🏆</span> Hall of Fame History
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Select a month to load in form, or clear history for a specific month.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setHistoryModalOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors"
+                aria-label="Close"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Body / Months List */}
+            <div className="p-6 overflow-y-auto space-y-3.5 flex-1">
+              {sortedEntries.length === 0 ? (
+                <div className="py-12 text-center text-sm text-slate-500 dark:text-slate-400">
+                  <p className="text-base font-semibold text-slate-700 dark:text-slate-300">No records found</p>
+                  <p className="text-xs mt-1">Add monthly winners using the form to build the Hall of Fame.</p>
+                </div>
+              ) : (
+                sortedEntries.map((entry) => {
+                  const monthName = getMonthName(entry.month);
+                  const isDeleting = deletingId === entry.id;
+
+                  return (
+                    <div
+                      key={entry.id}
+                      className="p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-white dark:hover:bg-slate-800/80 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 px-2.5 py-0.5 rounded-md border border-blue-200/60 dark:border-blue-900/50">
+                            {monthName} {entry.year}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                          {/* Winner preview */}
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            {entry.winnerImage ? (
+                              <img
+                                src={entry.winnerImage}
+                                alt={entry.winnerName}
+                                className="w-8 h-8 rounded-full object-cover shrink-0 border border-amber-300 shadow-xs"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-bold flex items-center justify-center text-xs shrink-0 border border-amber-200">
+                                🥇
+                              </div>
+                            )}
+                            <div className="min-w-0">
+                              <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-tight">Winner</p>
+                              <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">{entry.winnerName}</p>
+                            </div>
+                          </div>
+
+                          {/* Runner-up preview */}
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            {entry.runnerUpImage ? (
+                              <img
+                                src={entry.runnerUpImage}
+                                alt={entry.runnerUpName}
+                                className="w-8 h-8 rounded-full object-cover shrink-0 border border-slate-300 shadow-xs"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold flex items-center justify-center text-xs shrink-0 border border-slate-200">
+                                🥈
+                              </div>
+                            )}
+                            <div className="min-w-0">
+                              <p className="text-[11px] font-bold text-slate-500 uppercase tracking-tight">Runner-up</p>
+                              <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">{entry.runnerUpName}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Actions for this month */}
+                      <div className="flex items-center gap-2 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200 dark:border-slate-800">
+                        <button
+                          type="button"
+                          onClick={() => handleSelectEntryToEdit(entry)}
+                          className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors shadow-xs"
+                        >
+                          Load in Form
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleClearMonth(entry)}
+                          disabled={isDeleting}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/50 border border-red-200/80 dark:border-red-900/50 transition-colors disabled:opacity-50"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          <span>{isDeleting ? 'Clearing...' : 'Clear Month'}</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 flex items-center justify-between">
+              {sortedEntries.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={handleClearAll}
+                  className="text-xs font-semibold text-red-600 dark:text-red-400 hover:underline cursor-pointer"
+                >
+                  Clear All Months
+                </button>
+              ) : <div />}
+              <button
+                type="button"
+                onClick={() => setHistoryModalOpen(false)}
+                className="px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

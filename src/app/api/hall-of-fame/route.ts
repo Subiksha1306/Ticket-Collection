@@ -144,11 +144,38 @@ export async function DELETE(request: Request) {
     if (!session?.user || !isAdmin(session.user.email)) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
-    
-    await prisma.hallOfFame.deleteMany();
-    return new NextResponse('History Erased', { status: 200 });
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    const month = searchParams.get('month');
+    const year = searchParams.get('year');
+    const all = searchParams.get('all') === 'true';
+
+    if (id) {
+      await prisma.hallOfFame.delete({
+        where: { id },
+      });
+      return NextResponse.json({ success: true, message: 'Record deleted' });
+    }
+
+    if (month && year) {
+      await prisma.hallOfFame.deleteMany({
+        where: {
+          month: parseInt(month, 10),
+          year: parseInt(year, 10),
+        },
+      });
+      return NextResponse.json({ success: true, message: 'Month record deleted' });
+    }
+
+    if (all || (!id && !month && !year)) {
+      await prisma.hallOfFame.deleteMany();
+      return NextResponse.json({ success: true, message: 'All history erased' });
+    }
+
+    return new NextResponse('Invalid delete parameters', { status: 400 });
   } catch (error) {
-    console.error('Error erasing Hall of Fame:', error);
+    console.error('Error deleting Hall of Fame:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }
