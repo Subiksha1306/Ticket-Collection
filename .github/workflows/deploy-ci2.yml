@@ -26,7 +26,7 @@ jobs:
     name: Build, Push & Deploy
     if: github.repository == 'techxle/ticket-tool-impactx' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    environment: ci
+    environment: dev
     permissions:
       contents: read
       packages: write
@@ -92,11 +92,12 @@ jobs:
           GHCR_USERNAME: ${{ github.actor }}
           GHCR_PAT: ${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ steps.source.outputs.sha }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          DATABASE_URL: ${{ vars.DATABASE_URL || secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ vars.DIRECT_URL || secrets.DIRECT_URL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
           AZURE_AD_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
           AZURE_AD_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
           AZURE_AD_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
@@ -120,6 +121,7 @@ jobs:
           [[ -n "${JWT_SECRET:-}" ]] && SETTINGS+=("JWT_SECRET=$JWT_SECRET")
           [[ -n "${NEXTAUTH_SECRET:-}" ]] && SETTINGS+=("NEXTAUTH_SECRET=$NEXTAUTH_SECRET")
           [[ -n "${GROQ_API_KEY:-}" ]] && SETTINGS+=("GROQ_API_KEY=$GROQ_API_KEY")
+          [[ -n "${CRON_SECRET:-}" ]] && SETTINGS+=("CRON_SECRET=$CRON_SECRET")
           [[ -n "${AZURE_AD_CLIENT_ID:-}" ]] && SETTINGS+=("AZURE_AD_CLIENT_ID=$AZURE_AD_CLIENT_ID")
           [[ -n "${AZURE_AD_CLIENT_SECRET:-}" ]] && SETTINGS+=("AZURE_AD_CLIENT_SECRET=$AZURE_AD_CLIENT_SECRET")
           [[ -n "${AZURE_AD_TENANT_ID:-}" ]] && SETTINGS+=("AZURE_AD_TENANT_ID=$AZURE_AD_TENANT_ID")
