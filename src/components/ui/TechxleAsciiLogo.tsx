@@ -60,7 +60,7 @@ export default function TechxleAsciiLogo({
   return (
     <div
       className={`relative select-none pointer-events-none ${className}`}
-      style={{ opacity }}
+      style={{ opacity, contain: 'paint layout', transform: 'translateZ(0)' }}
       aria-hidden="true"
     >
       {/* 1. Vector Diamond Halftone SVG */}

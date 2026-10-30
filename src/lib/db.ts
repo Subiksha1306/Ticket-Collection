@@ -12,25 +12,27 @@ declare const globalThis: {
   pgPoolGlobal?: Pool;
 } & typeof global;
 
-const pool = globalThis.pgPoolGlobal ?? new Pool({
-  connectionString,
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
-});
+const pool =
+  globalThis.pgPoolGlobal ??
+  new Pool({
+    connectionString,
+    max: 10,
+    idleTimeoutMillis: 60000,
+    connectionTimeoutMillis: 5000,
+    keepAlive: true,
+    keepAliveInitialDelayMillis: 10000,
+  });
 
-if (process.env.NODE_ENV !== 'production') {
-  globalThis.pgPoolGlobal = pool;
-}
+globalThis.pgPoolGlobal = pool;
 
 const adapter = new PrismaPg(pool);
 
 const prismaClientSingleton = () => {
-  return new PrismaClient({ adapter })
-}
+  return new PrismaClient({ adapter });
+};
 
-const prisma = globalThis.prismaGlobal ?? prismaClientSingleton()
+const prisma = globalThis.prismaGlobal ?? prismaClientSingleton();
 
-export { prisma }
+globalThis.prismaGlobal = prisma;
 
-if (process.env.NODE_ENV !== 'production') globalThis.prismaGlobal = prisma
+export { prisma };

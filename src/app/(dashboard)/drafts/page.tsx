@@ -27,13 +27,26 @@ export default async function MySubmissionsPage(props: {
   let submissions = await prisma.submission.findMany({
     where: whereClause,
     orderBy: { updatedAt: 'desc' },
-    include: {
-      author: true,
+    select: {
+      id: true,
+      ticketNumber: true,
+      updatedAt: true,
+      author: {
+        select: {
+          name: true,
+          email: true,
+        },
+      },
       versions: {
         orderBy: { versionNumber: 'desc' },
-        take: 1
-      }
-    }
+        take: 1,
+        select: {
+          versionNumber: true,
+          title: true,
+          isDraft: true,
+        },
+      },
+    },
   });
 
   // Filter out submissions where the latest version is a draft

@@ -65,13 +65,20 @@ html.dark,
 
 body {
   background-color: var(--canvas-bg, #ece7de);
-  background-image: var(--glow);
-  background-repeat: no-repeat;
-  background-attachment: fixed;
   color: var(--text);
   font-family: var(--font-manrope), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   min-height: 100vh;
-  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: var(--glow);
+  background-repeat: no-repeat;
+  pointer-events-none;
+  transform: translateZ(0);
 }
 
 /* Glass styling utilities */
@@ -82,7 +89,6 @@ body {
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-card);
   box-shadow: var(--glass-shadow);
-  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 @supports not (backdrop-filter: blur(1px)) {

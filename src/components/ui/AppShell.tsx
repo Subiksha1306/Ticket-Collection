@@ -88,7 +88,7 @@ function SidebarView({
     <div className="flex flex-col h-full">
       {/* Brand Logo in Papillon Serif Font */}
       <div className="pt-2 pb-6 px-3">
-        <Link href="/" onClick={onNavigate} className="inline-flex items-center gap-2 group focus:outline-none">
+        <Link href="/" prefetch={true} onClick={onNavigate} className="inline-flex items-center gap-2 group focus:outline-none">
           <span className="font-papillon text-[28px] tracking-[0.04em] text-[var(--text)] select-none leading-none transition-transform group-hover:scale-[1.02]">
             Impact<span className="text-[var(--primary)] font-bold">X</span>
           </span>
@@ -103,6 +103,7 @@ function SidebarView({
             <Link
               key={item.name}
               href={item.href}
+              prefetch={true}
               onClick={onNavigate}
               className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-[12px] text-sm font-medium transition-all ${
                 isActive
@@ -128,6 +129,7 @@ function SidebarView({
                 <Link
                   key={item.name}
                   href={item.href}
+                  prefetch={true}
                   onClick={onNavigate}
                   className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-[12px] text-sm font-medium transition-all ${
                     isActive
@@ -261,7 +263,7 @@ export const AppShell: React.FC<AppShellProps> = ({
   const initial = (displayName.charAt(0) || 'U').toUpperCase();
 
   return (
-    <div className="min-h-screen flex bg-[#f4f7fb] dark:bg-[#0b0f19] text-[var(--text)] font-sans antialiased selection:bg-[var(--primary)] selection:text-white transition-colors duration-200">
+    <div className="min-h-screen flex bg-[#f4f7fb] dark:bg-[#0b0f19] text-[var(--text)] font-sans antialiased selection:bg-[var(--primary)] selection:text-white">
       {/* Blurred Frosted Glass Sidebar (Desktop) - Blurs out left side */}
       <aside className="w-64 shrink-0 hidden lg:flex flex-col bg-white/70 dark:bg-slate-900/75 backdrop-blur-2xl border-r border-slate-200/70 dark:border-slate-800/70 p-5 h-screen sticky top-0 z-30 shadow-[4px_0_24px_-4px_rgba(44,66,110,0.04)]">
         <SidebarView
@@ -314,6 +316,8 @@ export const AppShell: React.FC<AppShellProps> = ({
           style={{
             maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0) 100%)',
             WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0) 100%)',
+            transform: 'translateZ(0)',
+            contain: 'paint',
           }}
           aria-hidden="true" 
         />
@@ -324,6 +328,8 @@ export const AppShell: React.FC<AppShellProps> = ({
           style={{
             maskImage: 'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%)',
             WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%)',
+            transform: 'translateZ(0)',
+            contain: 'paint',
           }}
           aria-hidden="true" 
         />

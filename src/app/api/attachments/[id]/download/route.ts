@@ -39,26 +39,6 @@ export async function GET(
           : `${fileUrl}?download=${encodeURIComponent(attachment.originalFileName)}`);
 
     return NextResponse.redirect(downloadUrl);
-
-    // 2. Fallback: Download via Supabase client SDK
-    const filePath = `uploads/${attachment.storedFileName}`;
-    const { data, error } = await supabase.storage
-      .from('ticket-attachments')
-      .download(filePath);
-
-    if (error || !data) {
-      console.error('Supabase download error:', error);
-      return NextResponse.json({ error: 'Failed to download file' }, { status: 500 });
-    }
-
-    return new NextResponse(data, {
-      headers: {
-        'Content-Type': attachment.fileType || 'application/octet-stream',
-        'Content-Disposition': isPreview 
-          ? `inline; filename="${encodeURIComponent(attachment.originalFileName)}"` 
-          : `attachment; filename="${encodeURIComponent(attachment.originalFileName)}"`,
-      }
-    });
   } catch (error) {
     console.error('Download route error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

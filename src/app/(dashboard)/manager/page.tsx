@@ -44,11 +44,24 @@ export default async function ManagerDashboardPage({
       where: {
         status: 'Under Review',
       },
-      include: {
-        author: true,
-        versions: { orderBy: { versionNumber: 'desc' }, take: 1 }
+      select: {
+        id: true,
+        ticketNumber: true,
+        createdAt: true,
+        author: {
+          select: {
+            name: true,
+          },
+        },
+        versions: {
+          orderBy: { versionNumber: 'desc' },
+          take: 1,
+          select: {
+            title: true,
+          },
+        },
       },
-      orderBy: { createdAt: 'asc' }
+      orderBy: { createdAt: 'asc' },
     }),
     prisma.submission.findMany({
       where: {

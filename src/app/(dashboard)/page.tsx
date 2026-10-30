@@ -129,7 +129,7 @@ export default async function Dashboard() {
 
         {/* Ambient Techxle ASCII Logo with ASCII Values merging softly towards top-left */}
         <div 
-          className="absolute -top-12 sm:-top-16 right-[-10px] sm:right-2 lg:right-6 w-[340px] sm:w-[460px] md:w-[540px] lg:w-[620px] pointer-events-none z-0 select-none text-[#2c426e] dark:text-sky-300 opacity-60 dark:opacity-65 transition-all duration-300"
+          className="absolute -top-12 sm:-top-16 right-[-10px] sm:right-2 lg:right-6 w-[340px] sm:w-[460px] md:w-[540px] lg:w-[620px] pointer-events-none z-0 select-none text-[#2c426e] dark:text-sky-300 opacity-60 dark:opacity-65 transition-opacity duration-200 transform-gpu"
           aria-hidden="true"
         >
           <TechxleAsciiLogo 
@@ -150,7 +150,7 @@ export default async function Dashboard() {
 
       {/* Two Action Cards matching reference */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 relative z-10">
-        <Link href="/submissions/new" className="group block focus:outline-none">
+        <Link href="/submissions/new" prefetch={true} className="group block focus:outline-none">
           <GlassCard className="p-6 transition-all duration-200 group-hover:-translate-y-0.5 group-hover:bg-white/70 group-hover:shadow-[0_12px_36px_rgba(44,66,110,0.12)]">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-[14px] bg-[#dfe7f5] text-[var(--primary)] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
@@ -170,7 +170,7 @@ export default async function Dashboard() {
           </GlassCard>
         </Link>
 
-        <Link href="/submissions" className="group block focus:outline-none">
+        <Link href="/submissions" prefetch={true} className="group block focus:outline-none">
           <GlassCard className="p-6 transition-all duration-200 group-hover:-translate-y-0.5 group-hover:bg-white/70 group-hover:shadow-[0_12px_36px_rgba(44,66,110,0.12)]">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-[14px] bg-[#dfe7f5] text-[var(--primary)] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
@@ -199,6 +199,7 @@ export default async function Dashboard() {
           </h2>
           <Link
             href="/submissions"
+            prefetch={true}
             className="text-xs sm:text-sm font-semibold text-[var(--primary)] hover:text-[var(--primary-hover)] transition-colors"
           >
             View all
