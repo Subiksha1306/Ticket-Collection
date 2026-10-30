@@ -151,13 +151,15 @@ export async function DELETE(request: Request) {
     const year = searchParams.get('year');
     const all = searchParams.get('all') === 'true';
 
+    // 1. Delete a specific month entry by ID
     if (id) {
       await prisma.hallOfFame.delete({
         where: { id },
       });
-      return NextResponse.json({ success: true, message: 'Record deleted' });
+      return NextResponse.json({ success: true, message: 'Monthly record cleared' });
     }
 
+    // 2. Delete a specific month entry by month + year
     if (month && year) {
       await prisma.hallOfFame.deleteMany({
         where: {
@@ -165,17 +167,18 @@ export async function DELETE(request: Request) {
           year: parseInt(year, 10),
         },
       });
-      return NextResponse.json({ success: true, message: 'Month record deleted' });
+      return NextResponse.json({ success: true, message: 'Monthly record cleared' });
     }
 
-    if (all || (!id && !month && !year)) {
+    // 3. Delete all history if explicitly requested
+    if (all) {
       await prisma.hallOfFame.deleteMany();
-      return NextResponse.json({ success: true, message: 'All history erased' });
+      return NextResponse.json({ success: true, message: 'All Hall of Fame history erased' });
     }
 
-    return new NextResponse('Invalid delete parameters', { status: 400 });
+    return NextResponse.json({ error: 'Missing id, month/year, or all parameter' }, { status: 400 });
   } catch (error) {
-    console.error('Error deleting Hall of Fame:', error);
+    console.error('Error clearing Hall of Fame:', error);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }

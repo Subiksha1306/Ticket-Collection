@@ -271,6 +271,10 @@ function fileToBase64(file: File, maxDim = 320): Promise<string> {
     return b.month - a.month;
   });
 
+  const currentMonthEntry = month
+    ? existingEntries.find((e) => `${e.year}-${String(e.month).padStart(2, '0')}` === month)
+    : null;
+
   const handleSelectEntryToEdit = (entry: HallOfFameEntry) => {
     const monthStr = `${entry.year}-${String(entry.month).padStart(2, '0')}`;
     setMonth(monthStr);
@@ -360,15 +364,15 @@ function fileToBase64(file: File, maxDim = 320): Promise<string> {
         <button
           type="button"
           onClick={() => setHistoryModalOpen(true)}
-          className="text-xs font-semibold text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 bg-red-50 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-900/40 px-3.5 py-1.5 rounded-lg transition-colors border border-red-200 dark:border-red-900/50 flex items-center gap-1.5 shadow-xs cursor-pointer"
+          className="text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700/80 px-3.5 py-1.5 rounded-lg transition-colors border border-slate-200/90 dark:border-slate-700 flex items-center gap-1.5 shadow-xs cursor-pointer"
         >
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <span>History &amp; Clear</span>
+          <span>History</span>
           {existingEntries.length > 0 && (
-            <span className="ml-0.5 px-1.5 py-0.2 rounded-full bg-red-200/70 dark:bg-red-900/60 text-red-800 dark:text-red-200 text-[10px] font-bold">
-              {existingEntries.length}
+            <span className="ml-0.5 px-1.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-200 text-[10px] font-bold">
+              {existingEntries.length} {existingEntries.length === 1 ? 'month' : 'months'}
             </span>
           )}
         </button>
@@ -384,18 +388,39 @@ function fileToBase64(file: File, maxDim = 320): Promise<string> {
       </datalist>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Month Picker Row */}
-        <div className="max-w-xs">
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1.5">
-            Recognition Month *
-          </label>
-          <input
-            type="month"
-            value={month}
-            onChange={(e) => handleMonthChange(e.target.value)}
-            required
-            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-          />
+        {/* Month Picker Row with Clear This Month shortcut */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+          <div className="max-w-xs flex-1">
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 mb-1.5">
+              Recognition Month *
+            </label>
+            <input
+              type="month"
+              value={month}
+              onChange={(e) => handleMonthChange(e.target.value)}
+              required
+              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            />
+          </div>
+
+          {currentMonthEntry && (
+            <div className="flex items-center gap-2 pb-1">
+              <span className="text-xs text-amber-700 dark:text-amber-300 font-medium bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1.5 rounded-lg border border-amber-200 dark:border-amber-900/50 flex items-center gap-1.5">
+                <span>✓</span> Existing record loaded
+              </span>
+              <button
+                type="button"
+                onClick={() => handleClearMonth(currentMonthEntry)}
+                disabled={deletingId === currentMonthEntry.id}
+                className="text-xs font-semibold text-red-600 dark:text-red-400 hover:text-red-800 bg-red-50 hover:bg-red-100 dark:bg-red-950/40 px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-900/50 transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <span>{deletingId === currentMonthEntry.id ? 'Clearing...' : 'Clear This Month'}</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Two Columns: Winner and Runner-up */}
