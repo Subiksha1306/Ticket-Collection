@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import ManagerMonthPicker from '@/components/ManagerMonthPicker';
 import ExportReportMenu from '@/components/ExportReportMenu';
+import RunScoringButton from '@/components/RunScoringButton';
 import { prisma } from '@/lib/db';
 
 export default async function ManagerDashboardPage({
@@ -141,6 +142,7 @@ export default async function ManagerDashboardPage({
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-3">
           <ManagerMonthPicker />
+          <RunScoringButton monthParam={monthParam || `${startOfMonth.getFullYear()}-${String(startOfMonth.getMonth() + 1).padStart(2, '0')}`} />
           <ExportReportMenu monthParam={monthParam} />
         </div>
       </div>

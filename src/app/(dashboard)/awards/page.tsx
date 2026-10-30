@@ -71,6 +71,10 @@ export default async function AwardsPage() {
     ? `${getMonthName(mostRecentWinner.month)} ${mostRecentWinner.year}`
     : `${getMonthName(now.getMonth() + 1)} ${now.getFullYear()}`;
 
+  const targetMonthParam = mostRecentWinner 
+    ? `${mostRecentWinner.year}-${String(mostRecentWinner.month).padStart(2, '0')}`
+    : `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
   return (
     <div className="space-y-8 pb-12 w-full max-w-7xl mx-auto">
       
@@ -139,15 +143,26 @@ export default async function AwardsPage() {
                 <span>{currentMonthDisplay}</span>
               </div>
               <a
-                href="/api/export?type=awards"
+                href={`/api/export?type=awards&month=${targetMonthParam}`}
                 download
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 text-xs font-semibold border border-purple-200 dark:border-purple-800/50 transition-colors shadow-xs"
-                title="Download monthly I2I Recognition Awards Dashboard as standalone HTML"
+                title={`Download ${currentMonthDisplay} I2I Recognition Awards Dashboard as standalone HTML`}
               >
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
-                Export Awards Dashboard (HTML)
+                Export {currentMonthDisplay} Awards
+              </a>
+              <a
+                href="/api/export?type=awards&all=true"
+                download
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-white/70 hover:bg-white/90 dark:bg-slate-800/60 dark:hover:bg-slate-700/60 text-slate-700 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700/60 transition-colors shadow-xs"
+                title="Download All-Time I2I Recognition Awards Dashboard as standalone HTML"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Export All-Time Awards
               </a>
             </div>
           </div>
